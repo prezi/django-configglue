@@ -30,35 +30,38 @@ class Command(BaseCommand):
 
         settings = map(str.upper, args)
         if locate:
-            self.locate(settings)
+            output = self.locate(settings)
         else:
-            self.get(settings)
+            output = self.get(settings)
 
             if show_current:
-                self.show(include_global)
+                output += self.show(include_global)
+
+        return output
 
     def show(self, include_global=False):
-        global_settings_ = dir(global_settings)
-        all_settings = (k for k in settings.get_all_members() \
-                        if not (k.startswith('__') or k == 'get_all_members'))
+        global_settings_ = set(dir(global_settings))
+        all_settings = set(k for k in dir(settings) if k.isupper())
         lines = []
         if include_global:
             local_settings = all_settings
         else:
-            local_settings = (s for s in all_settings if s not in global_settings_)
+            local_settings = all_settings - global_settings
         for name in local_settings:
             lines.append("%s = %r" % (name, getattr(settings, name)))
 
-        print '\n'.join(lines)
+        return '\n'.join(lines)
 
     def get(self, keys):
         __marker = object()
+        output = ''
         for key in keys:
             value = getattr(settings, key, __marker)
             if value is __marker:
-                print "setting '%s' not found" % key
+                output = "setting '%s' not found" % key
             else:
-                print "%s = %r" % (key, value)
+                output = "%s = %r" % (key, value)
+        return output
 
     def locate(self, keys):
         location = None
@@ -77,9 +80,11 @@ class Command(BaseCommand):
                 if location is None:
                     location = parser.locate(option=case)
                 if location is not None:
-                    print "setting %s last defined in %r" % (
-                        key.upper(), os.path.abspath(location))
+                    output =  "setting %s last defined in %r" % (
+                                  key.upper(), os.path.abspath(location))
                     break
             else:
-                print "setting %s not found" % key.upper()
+                output = "setting %s not found" % key.upper()
+
+        return output
 
