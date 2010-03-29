@@ -1,6 +1,7 @@
 # minimal settings for testing django_settings
 
 DATABASE_ENGINE = 'sqlite3'
+DATABASE_NAME = 'test_django_settings.db'
 
 INSTALLED_APPS = (
     'django_settings',
