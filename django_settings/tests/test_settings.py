@@ -58,6 +58,15 @@ class DjangoSettingsCommandTestCase(CommandTestCase):
         self.assertEqual(self.capture['stdout'].strip(), expected_output)
 
 
+class ValidateCommandTestCase(CommandTestCase):
+    COMMAND = 'settings'
+
+    def test_validate_non_schemaconfig_settings(self):
+        self.call_command(validate=True)
+        expected_output = 'Settings appear to be fine'
+        self.assertEqual(self.capture['stdout'].strip(), expected_output)
+
+
 if __SCHEMACONFIG__:
     class SchemaConfigSettingsCommandTestCase(SchemaConfigCommandTestCase):
         COMMAND = 'settings'
@@ -73,3 +82,30 @@ if __SCHEMACONFIG__:
             self.call_command('bogus', locate=True)
             expected_output = 'setting BOGUS not found'
             self.assertEqual(self.capture['stdout'].strip(), expected_output)
+
+
+    class ValidateSchemaConfigCommandTestCase(SchemaConfigCommandTestCase):
+        COMMAND = 'settings'
+
+        def test_valid_config(self):
+            self.call_command(validate=True)
+            expected_output = 'Settings appear to be fine'
+            self.assertEqual(self.capture['stdout'].strip(), expected_output)
+
+        def test_invalid_config(self):
+            config = """
+[bogus]
+invalid_setting = foo
+"""
+            self.set_config(config)
+            self.assertRaises(SystemExit, self.call_command, validate=True)
+
+            try:
+                self.call_command(validate=True)
+            except SystemExit, e:
+                self.assertEqual(e.code, 1)
+                error_msg = 'Error: Settings did not validate against schema'
+                self.assertTrue(self.capture['stderr'].strip().startswith(
+                    error_msg))
+
+
