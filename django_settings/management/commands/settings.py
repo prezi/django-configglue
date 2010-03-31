@@ -33,7 +33,7 @@ class Command(BaseCommand):
             return
 
         if validate:
-            output = self.validate()
+            output = self.validate_settings()
         else:
             settings = map(str.upper, args)
             if locate:
@@ -105,7 +105,7 @@ class Command(BaseCommand):
 
         return '\n'.join(output)
 
-    def validate(self):
+    def validate_settings(self):
         is_valid = True
         try:
             parser = settings.__SCHEMACONFIGPARSER__
