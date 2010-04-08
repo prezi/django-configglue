@@ -1,6 +1,10 @@
-from schemaconfig import SchemaConfigParser
-from schemaconfig._django import update_settings, DjangoSchema
+import django
 
+from schemaconfig import SchemaConfigParser
+from schemaconfig.django import update_settings, schemas
+
+
+DjangoSchema = schemas.get(django.get_version())
 # parse config file
 parser = SchemaConfigParser(DjangoSchema())
 parser.read(['test.cfg'])
