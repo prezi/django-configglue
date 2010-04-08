@@ -1,0 +1,25 @@
+Source: django-settings
+Section: python
+Priority: extra
+Build-Depends: cdbs (>= 0.4.43),
+ debhelper (>= 6),
+ python,
+ python-central (>= 0.6),
+ python-setuptools
+Maintainer: Canonical ISD Hackers <canonical-isd@lists.launchpad.net>
+Standards-Version: 3.8.3
+XS-Python-Version: current
+
+Package: python-django-settings
+Architecture: all
+XB-Python-Version: ${python:Versions}
+Depends: ${misc:Depends}, ${python:Depends},
+ python-django (>= 1.0.2)
+Description: Django commands for managing settings  
+ Django commands for managing settings from command line.
+ Commands allow:
+  - get value of setting
+  - list settings used (and their values)
+  - list global settings (and their values)
+  - locate definition of setting (useful when setting defined using schemaconfig)
+  - validate settings (useful when settings defined using schemaconfig)
