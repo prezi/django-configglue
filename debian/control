@@ -6,7 +6,7 @@ Build-Depends: cdbs (>= 0.4.43),
  python,
  python-central (>= 0.6),
  python-setuptools
-Maintainer: Canonical ISD Hackers <canonical-isd@lists.launchpad.net>
+Maintainer: Ricardo Kirkner <ricardo.kirkner@canonical.com>
 Standards-Version: 3.8.3
 XS-Python-Version: current
 
