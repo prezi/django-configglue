@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='django-settings',
-    version='0.1',
+    version='0.2',
     author='Canonical ISD Hackers',
     author_email='canonical-isd@lists.launchpad.net',
     license='Proprietary',
