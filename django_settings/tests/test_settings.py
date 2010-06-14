@@ -1,8 +1,9 @@
 import os.path
 
+import django
 from django.conf import settings, global_settings
 
-from helpers import CommandTestCase, SchemaConfigCommandTestCase
+from helpers import DjangoCommandTestCase, SchemaConfigCommandTestCase
 
 try:
     import schemaconfig
@@ -11,7 +12,7 @@ except ImportError:
     __SCHEMACONFIG__ = False
 
 
-class DjangoSettingsCommandTestCase(CommandTestCase):
+class DjangoSettingsCommandTestCase(DjangoCommandTestCase):
     COMMAND = 'settings'
 
     def test_no_args(self):
@@ -29,8 +30,13 @@ class DjangoSettingsCommandTestCase(CommandTestCase):
         self.assertEqual(self.capture['stdout'].strip(), expected_output)
 
     def test_show(self):
+        expected_values = [
+            "SETTINGS_MODULE = 'test_django_settings.settings'"
+        ]
+        if django.VERSION[:2] >= (1, 1):
+            expected_values.append("DATABASE_SUPPORTS_TRANSACTIONS = True")
         self.call_command(show_current=True)
-        expected_output = "SETTINGS_MODULE = 'test_django_settings.settings'"
+        expected_output = '\n'.join(expected_values)
         self.assertEqual(self.capture['stdout'].strip(), expected_output)
 
     def test_show_global(self):
@@ -38,7 +44,8 @@ class DjangoSettingsCommandTestCase(CommandTestCase):
         expected_output = dict([(key, getattr(settings, key)) for key in
             settings.get_all_members() if key.isupper()])
         # process output into dictionary
-        items = map(lambda x: x.split(' = '), self.capture['stdout'].strip().split('\n'))
+        items = map(lambda x: x.split(' = '),
+                    self.capture['stdout'].strip().split('\n'))
         items = map(lambda x: (x[0].strip(), eval(x[1].strip())), items)
         output = dict(items)
         # test equality
@@ -58,7 +65,7 @@ class DjangoSettingsCommandTestCase(CommandTestCase):
         self.assertEqual(self.capture['stdout'].strip(), expected_output)
 
 
-class ValidateCommandTestCase(CommandTestCase):
+class ValidateCommandTestCase(DjangoCommandTestCase):
     COMMAND = 'settings'
 
     def test_validate_non_schemaconfig_settings(self):
@@ -98,6 +105,7 @@ if __SCHEMACONFIG__:
 invalid_setting = foo
 """
             self.set_config(config)
+            self.load_settings('test_django_settings.settings_schemaconfig')
             self.assertRaises(SystemExit, self.call_command, validate=True)
 
             try:

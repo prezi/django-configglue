@@ -1,7 +1,7 @@
 # minimal settings for testing django_settings
 
 DATABASE_ENGINE = 'sqlite3'
-DATABASE_NAME = 'test_django_settings.db'
+DATABASE_NAME = ':memory:'
 
 INSTALLED_APPS = (
     'django_settings',
