@@ -1,0 +1,1 @@
+django_schemaconfig/tests/settings.py

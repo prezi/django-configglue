@@ -8,16 +8,31 @@ from django.conf import settings
 from django.test import TestCase
 
 
-class DjangoCommandTestCase(TestCase):
+class SchemaConfigDjangoCommandTestCase(TestCase):
     COMMAND = ''
 
-    def setUp(self, module='test_django_settings.settings'):
-        self._DJANGO_SETTINGS_MODULE = self.load_settings(module)
+    def setUp(self):
+        config = """
+[django]
+database_engine = sqlite3
+database_name = :memory:
+installed_apps = django_schemaconfig
+time_zone = Europe/London
+"""
+        self.set_config(config)
+        self._DJANGO_SETTINGS_MODULE = self.load_settings()
 
     def tearDown(self):
         self.load_settings(self._DJANGO_SETTINGS_MODULE)
         self.assertEqual(os.environ['DJANGO_SETTINGS_MODULE'],
                          self._DJANGO_SETTINGS_MODULE)
+
+        os.remove('test.cfg')
+
+    def set_config(self, config):
+        config_file = open('test.cfg', 'w')
+        config_file.write(config)
+        config_file.close()
 
     @property
     def wrapped_settings(self):
@@ -27,7 +42,7 @@ class DjangoCommandTestCase(TestCase):
             wrapped = '_wrapped'
         return wrapped
 
-    def load_settings(self, module):
+    def load_settings(self, module='django_schemaconfig.tests.settings'):
         old_module = os.environ['DJANGO_SETTINGS_MODULE']
         # remove old settings module
         if old_module in sys.modules:
@@ -52,6 +67,9 @@ class DjangoCommandTestCase(TestCase):
 
         return old_module
 
+    def is_setting(self, name):
+        return not name.startswith('__') and name.isupper()
+
     def begin_capture(self):
         self._stdout = sys.stdout
         self._stderr = sys.stderr
@@ -74,27 +92,4 @@ class DjangoCommandTestCase(TestCase):
             management.call_command(self.COMMAND, *args, **kwargs)
         finally:
             self.end_capture()
-
-
-class SchemaConfigCommandTestCase(DjangoCommandTestCase):
-    def setUp(self):
-        config = """
-[django]
-database_engine = sqlite3
-database_name = :memory:
-installed_apps = django_settings
-"""
-        self.set_config(config)
-        super(SchemaConfigCommandTestCase, self).setUp(
-            'test_django_settings.settings_schemaconfig')
-
-    def tearDown(self):
-        super(SchemaConfigCommandTestCase, self).tearDown()
-
-        os.remove('test.cfg')
-
-    def set_config(self, config):
-        config_file = open('test.cfg', 'w')
-        config_file.write(config)
-        config_file.close()
 

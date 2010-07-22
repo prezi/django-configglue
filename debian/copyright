@@ -1,5 +1,5 @@
 Format-Specification: http://wiki.debian.org/Proposals/CopyrightFormat
-Upstream-Name: django-settings
+Upstream-Name: django-schemaconfig
 Upstream-Maintainer: Canonical ISD Hackers <canonical-isd@lists.launchpad.net>
 Upstream-Source: UNKNOWN
 

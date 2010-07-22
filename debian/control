@@ -1,4 +1,4 @@
-Source: django-settings
+Source: django-schemaconfig
 Section: python
 Priority: extra
 Build-Depends: cdbs (>= 0.4.43),
@@ -10,7 +10,7 @@ Maintainer: Ricardo Kirkner <ricardo.kirkner@canonical.com>
 Standards-Version: 3.8.3
 XS-Python-Version: current
 
-Package: python-django-settings
+Package: python-django-schemaconfig
 Architecture: all
 XB-Python-Version: ${python:Versions}
 Depends: ${misc:Depends}, ${python:Depends},

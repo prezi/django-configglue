@@ -1,13 +1,13 @@
 import django
-
 from schemaconfig import SchemaConfigParser
-from schemaconfig.django import update_settings, schemas
+from django_schemaconfig.utils import update_settings
+from django_schemaconfig.schema import schemas
 
 
 DjangoSchema = schemas.get(django.get_version())
 # parse config file
 parser = SchemaConfigParser(DjangoSchema())
-parser.read(['test.cfg'])
+parser.read(['main.cfg', 'test.cfg'])
 update_settings(parser, locals())
 
 # keep parser reference

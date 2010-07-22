@@ -1,10 +1,10 @@
-django-settings (0.2) lucid; urgency=low
+django-schemaconfig (0.2) lucid; urgency=low
 
   * Support for django 1.1.1 (lucid) addded 
 
  -- Ricardo Kirkner <ricardo.kirkner@canonical.com>  Mon, 14 Jun 2010 18:25:05 -0300
 
-django-settings (0.1) hardy; urgency=low
+django-schemaconfig (0.1) hardy; urgency=low
 
   * Initial release.
 
