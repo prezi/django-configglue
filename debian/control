@@ -15,8 +15,8 @@ Architecture: all
 XB-Python-Version: ${python:Versions}
 Depends: ${misc:Depends}, ${python:Depends},
  python-django (>= 1.0.2)
-Description: Django commands for managing settings  
- Django commands for managing settings from command line.
+Description: Django commands for managing schemaconfig generated settings  
+ Django commands for managing schemaconfig generated settings from the command line.
  Commands allow:
   - get value of setting
   - list settings used (and their values)

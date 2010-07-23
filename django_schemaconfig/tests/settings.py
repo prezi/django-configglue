@@ -1,3 +1,6 @@
+# Copyright 2010 Canonical Ltd.  This software is licensed under the
+# GNU Lesser General Public License version 3 (see the file LICENSE).
+
 import django
 from schemaconfig import SchemaConfigParser
 from django_schemaconfig.utils import update_settings

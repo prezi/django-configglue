@@ -4,4 +4,5 @@ Upstream-Maintainer: Canonical ISD Hackers <canonical-isd@lists.launchpad.net>
 Upstream-Source: UNKNOWN
 
 Files: *
-License: Proprietary
+Copyright: 2010, Canonical ISD Hackers <canonical-isd@lists.launchpad.net>
+License: LGPL-3

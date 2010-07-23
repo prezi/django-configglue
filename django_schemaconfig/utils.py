@@ -1,3 +1,6 @@
+# Copyright 2010 Canonical Ltd.  This software is licensed under the
+# GNU Lesser General Public License version 3 (see the file LICENSE).
+
 import sys
 
 from django import get_version
@@ -33,6 +36,8 @@ def update_settings(parser, env):
     settings = get_django_settings(parser)
     env.update(settings)
 
+# This function is based on code from the Django project.
+# Please see the license file in the third-party/django directory
 def execute_manager(settings, argv=None):
     parser = LaxOptionParser(usage="%prog subcommand [options] [args]",
                              version=get_version(),
