@@ -36,7 +36,7 @@ class DjangoSupportTestCase(unittest.TestCase):
         config = StringIO(u'[default]\nfoo=€'.encode(CONFIG_FILE_ENCODING))
         parser = SchemaConfigParser(MySchema())
         parser.readfp(config)
-        self.assertEqual(parser.values(), {'foo': u'€'})
+        self.assertEqual(parser.values('default'), {'foo': u'€'})
         result = get_django_settings(parser)
         self.assertEqual(result, expected)
 

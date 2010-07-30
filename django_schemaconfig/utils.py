@@ -27,8 +27,9 @@ def get_django_settings(parser):
         return value
 
     result = {}
-    for k, v in parser:
-        result[k.upper()] = encode(v)
+    for section, data in parser.values().items():
+        for option, value in data.items():
+            result[option.upper()] = encode(value)
     return result
 
 def update_settings(parser, env):
@@ -46,7 +47,7 @@ def execute_manager(settings, argv=None):
         parser, options, args = schemaconfigglue(settings.parser, op=parser)
         update_settings(settings.parser, vars(settings))
         argv = [sys.argv[0]] + args
-    except Exception, e:
+    except Exception:
         # capture errors to allow the manager to continue
         # they can be shown using django_settings'
         # settings --validate command
