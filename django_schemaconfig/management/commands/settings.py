@@ -3,10 +3,12 @@
 
 import os
 import sys
-from optparse import make_option
+from optparse import make_option, OptionParser
 
 from django.conf import settings, global_settings
 from django.core.management.base import BaseCommand, CommandError
+
+from schemaconfig import schemaconfigglue
 
 
 class Command(BaseCommand):
@@ -131,4 +133,18 @@ class Command(BaseCommand):
             raise CommandError(msg % errors)
 
         return msg
+
+    def create_parser(self, prog_name, subcommand):
+        """
+        Add all our SchemaConfigParser's options so they can be shown
+        in help messages and such.
+        """
+        parser = OptionParser(prog=prog_name,
+                              usage=self.usage(subcommand),
+                              version=self.get_version(),
+                              option_list=self.option_list)
+        schemaconfig_parser = settings.__SCHEMACONFIGPARSER__
+        op, options, args = schemaconfigglue(schemaconfig_parser, op=parser)
+        return op
+
 

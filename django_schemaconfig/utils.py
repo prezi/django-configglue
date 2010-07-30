@@ -1,15 +1,6 @@
 # Copyright 2010 Canonical Ltd.  This software is licensed under the
 # GNU Lesser General Public License version 3 (see the file LICENSE).
 
-import sys
-
-from django import get_version
-from django.core.management import (LaxOptionParser, setup_environ,
-    ManagementUtility)
-from django.core.management.base import BaseCommand
-from schemaconfig import schemaconfigglue
-
-
 SETTINGS_ENCODING = 'utf-8'
 
 
@@ -36,6 +27,7 @@ def update_settings(parser, env):
     # import config into settings module
     settings = get_django_settings(parser)
     env.update(settings)
+<<<<<<< TREE
 
 # This function is based on code from the Django project.
 # Please see the license file in the third-party/django directory
@@ -56,3 +48,5 @@ def execute_manager(settings, argv=None):
     setup_environ(settings)
     utility = ManagementUtility(argv)
     utility.execute()
+=======
+>>>>>>> MERGE-SOURCE
