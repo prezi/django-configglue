@@ -5,6 +5,7 @@ import os.path
 
 import django
 from django.conf import settings
+from django.core.management import ManagementUtility
 
 from helpers import SchemaConfigDjangoCommandTestCase
 
@@ -87,4 +88,22 @@ invalid_setting = foo
             error_msg = 'Error: Settings did not validate against schema.'
             self.assertTrue(self.capture['stderr'].strip().startswith(
                 error_msg))
+
+
+class CommandLineIntegrationTestCase(SchemaConfigDjangoCommandTestCase):
+    COMMAND = 'settings'
+
+    def test_help(self):
+        self.call_command()
+        self.assertTrue('--django_debug' in self.capture['stdout'])
+
+    def test_update_settings(self):
+        args = ['settings', '--django_debug=False', 'DEBUG']
+        utility = ManagementUtility(argv=args)
+        self.begin_capture()
+        try:
+            utility.execute()
+        finally:
+            self.end_capture()
+        self.assertTrue('False' in self.capture['stdout'])
 

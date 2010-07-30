@@ -25,15 +25,9 @@ class SchemaManagementUtility(ManagementUtility):
                                  version=django.get_version(),
                                  option_list=BaseCommand.option_list,
                                  conflict_handler='resolve')
-        
-        try:
-            options, args = parser.parse_args(self.argv)
-            handle_default_options(options)
-        except:
-            pass # Ignore any option errors at this point.
-
         schemaconfig_parser = settings.__SCHEMACONFIGPARSER__
-        op, options, args = schemaconfigglue(schemaconfig_parser, op=parser)
+        op, options, args = schemaconfigglue(schemaconfig_parser, op=parser,
+                                             argv=self.argv)
         update_settings(schemaconfig_parser, vars(settings))
         self.argv = self.argv[:1] + args
         try:
