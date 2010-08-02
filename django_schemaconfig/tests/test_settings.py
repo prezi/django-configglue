@@ -4,6 +4,7 @@
 import os.path
 
 import django
+from django import get_version
 from django.conf import settings
 from django.core.management import ManagementUtility
 
@@ -98,6 +99,7 @@ class CommandLineIntegrationTestCase(SchemaConfigDjangoCommandTestCase):
         self.assertTrue('--django_debug' in self.capture['stdout'])
 
     def test_update_settings(self):
+        self.assertTrue(settings.DEBUG)
         args = ['manage.py', 'settings', '--django_debug=False', 'DEBUG']
         utility = ManagementUtility(argv=args)
         self.begin_capture()
@@ -115,7 +117,8 @@ class CommandLineIntegrationTestCase(SchemaConfigDjangoCommandTestCase):
             utility.execute()
         finally:
             self.end_capture()
-        self.assertTrue(self.capture['stdout'].count('1.1.1') == 1)
+        expected = get_version()
+        self.assertTrue(self.capture['stdout'].count(expected) == 1)
 
     def test_noargs_doesnt_error(self):
         args = ['manage.py']
