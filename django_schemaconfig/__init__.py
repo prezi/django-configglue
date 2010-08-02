@@ -26,10 +26,9 @@ class SchemaManagementUtility(ManagementUtility):
                                  option_list=BaseCommand.option_list,
                                  conflict_handler='resolve')
         schemaconfig_parser = settings.__SCHEMACONFIGPARSER__
-        op, options, args = schemaconfigglue(schemaconfig_parser, op=parser,
-                                             argv=self.argv)
+        op, options, self.argv = schemaconfigglue(schemaconfig_parser,
+            op=parser, argv=self.argv)
         update_settings(schemaconfig_parser, vars(settings))
-        self.argv = self.argv[:1] + args
         try:
             subcommand = self.argv[1]
         except IndexError:

@@ -98,7 +98,7 @@ class CommandLineIntegrationTestCase(SchemaConfigDjangoCommandTestCase):
         self.assertTrue('--django_debug' in self.capture['stdout'])
 
     def test_update_settings(self):
-        args = ['settings', '--django_debug=False', 'DEBUG']
+        args = ['manage.py', 'settings', '--django_debug=False', 'DEBUG']
         utility = ManagementUtility(argv=args)
         self.begin_capture()
         try:
@@ -107,3 +107,22 @@ class CommandLineIntegrationTestCase(SchemaConfigDjangoCommandTestCase):
             self.end_capture()
         self.assertTrue('False' in self.capture['stdout'])
 
+    def test_version_is_printed_once(self):
+        args = ['manage.py', '--version']
+        utility = ManagementUtility(argv=args)
+        self.begin_capture()
+        try:
+            utility.execute()
+        finally:
+            self.end_capture()
+        self.assertTrue(self.capture['stdout'].count('1.1.1') == 1)
+
+    def test_noargs_doesnt_error(self):
+        args = ['manage.py']
+        utility = ManagementUtility(argv=args)
+        self.begin_capture()
+        try:
+            self.assertRaises(SystemExit, utility.execute)
+        finally:
+            self.end_capture()
+        self.assertFalse('Unknown command' in self.capture['stdout'])
