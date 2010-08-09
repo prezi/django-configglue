@@ -13,6 +13,8 @@ from django.conf import settings
 
 
 class GlueManagementUtility(ManagementUtility):
+    # This function was mostly taken from the django project.
+    # Please see the license file in the third-party/django directory.
     def execute(self):
         """
         Given the command-line arguments, this figures out which subcommand is
