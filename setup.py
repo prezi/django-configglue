@@ -4,11 +4,11 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='django-schemaconfig',
+    name='django-configglue',
     version='0.2',
     author='Canonical ISD Hackers',
     author_email='canonical-isd@lists.launchpad.net',
     license='LGPLv3',
     packages=find_packages(exclude=['testproject*']),
-    install_requires=['django >= 1.0.2-final', 'schemaconfig'],
+    install_requires=['django >= 1.0.2-final', 'configglue'],
 )

@@ -1,18 +1,18 @@
 # Copyright 2010 Canonical Ltd.  This software is licensed under the
 # GNU Lesser General Public License version 3 (see the file LICENSE).
 
-import os
 import sys
+
 import django
 import django.core.management
+from configglue.pyschema import schemaconfigglue
 from django.core.management import ManagementUtility, LaxOptionParser
 from django.core.management.base import BaseCommand
-from django_schemaconfig.utils import update_settings
+from django_configglue.utils import update_settings
 from django.conf import settings
-from schemaconfig import schemaconfigglue
 
 
-class SchemaManagementUtility(ManagementUtility):
+class GlueManagementUtility(ManagementUtility):
     def execute(self):
         """
         Given the command-line arguments, this figures out which subcommand is
@@ -25,10 +25,11 @@ class SchemaManagementUtility(ManagementUtility):
                                  version=django.get_version(),
                                  option_list=BaseCommand.option_list,
                                  conflict_handler='resolve')
-        schemaconfig_parser = settings.__SCHEMACONFIGPARSER__
-        op, options, self.argv = schemaconfigglue(schemaconfig_parser,
-            op=parser, argv=self.argv)
-        update_settings(schemaconfig_parser, vars(settings))
+        configglue_parser = settings.__CONFIGGLUE_PARSER__
+        op, options, args = schemaconfigglue(configglue_parser, op=parser,
+                                             argv=self.argv)
+        self.argv = args
+        update_settings(configglue_parser, vars(settings))
         try:
             subcommand = self.argv[1]
         except IndexError:
@@ -54,4 +55,4 @@ class SchemaManagementUtility(ManagementUtility):
             self.fetch_command(subcommand).run_from_argv(self.argv)
 
 # We're going to go ahead and use our own ManagementUtility here, thank you.
-django.core.management.ManagementUtility = SchemaManagementUtility
+django.core.management.ManagementUtility = GlueManagementUtility

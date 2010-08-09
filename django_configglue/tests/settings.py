@@ -2,9 +2,9 @@
 # GNU Lesser General Public License version 3 (see the file LICENSE).
 
 import django
-from schemaconfig import SchemaConfigParser
-from django_schemaconfig.utils import update_settings
-from django_schemaconfig.schema import schemas
+from configglue.pyschema import SchemaConfigParser
+from django_configglue.utils import update_settings
+from django_configglue.schema import schemas
 
 
 DjangoSchema = schemas.get(django.get_version())
@@ -14,5 +14,5 @@ parser.read(['main.cfg', 'test.cfg'])
 update_settings(parser, locals())
 
 # keep parser reference
-__SCHEMACONFIGPARSER__ = parser
+__CONFIGGLUE_PARSER__ = parser
 

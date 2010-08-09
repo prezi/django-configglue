@@ -11,7 +11,7 @@ from django.conf import settings
 from django.test import TestCase
 
 
-class SchemaConfigDjangoCommandTestCase(TestCase):
+class ConfigGlueDjangoCommandTestCase(TestCase):
     COMMAND = ''
 
     def setUp(self):
@@ -19,7 +19,7 @@ class SchemaConfigDjangoCommandTestCase(TestCase):
 [django]
 database_engine = sqlite3
 database_name = :memory:
-installed_apps = django_schemaconfig
+installed_apps = django_configglue
 time_zone = Europe/London
 """
         self.set_config(config)
@@ -45,7 +45,7 @@ time_zone = Europe/London
             wrapped = '_wrapped'
         return wrapped
 
-    def load_settings(self, module='django_schemaconfig.tests.settings'):
+    def load_settings(self, module='django_configglue.tests.settings'):
         old_module = os.environ['DJANGO_SETTINGS_MODULE']
         # remove old settings module
         if old_module in sys.modules:

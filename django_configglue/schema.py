@@ -1,12 +1,11 @@
 # Copyright 2010 Canonical Ltd.  This software is licensed under the
 # GNU Lesser General Public License version 3 (see the file LICENSE).
 
-from django import get_version
-from schemaconfig import ConfigSection
-from schemaconfig.options import (BoolConfigOption, DictConfigOption,
+from configglue.pyschema import ConfigSection
+from configglue.pyschema.options import (BoolConfigOption, DictConfigOption,
     IntConfigOption, LinesConfigOption, StringConfigOption, TupleConfigOption)
-from schemaconfig.parser import SchemaConfigParser
-from schemaconfig.schema import Schema
+from configglue.pyschema.schema import Schema
+from django import get_version
 
 
 # As in django.conf.global_settings:
@@ -460,25 +459,32 @@ class Django102Schema(BaseDjangoSchema):
             help="Path to the 'jing' executable -- needed to validate XMLFields")
 
 
-class Django111Schema(BaseDjangoSchema):
-    version = '1.1.1'
+class Django112Schema(BaseDjangoSchema):
+    version = '1.1.2'
 
 
 class DjangoSchemaFactory(object):
     def __init__(self):
         self._schemas = {}
-        self._default = ''
 
-    def register(self, schema_cls, version, default=False):
+    def register(self, schema_cls, version=None):
+        if version is None:
+            # fall back to looking the version of the schema class
+            version = getattr(schema_cls, 'version', None)
+        if version is None:
+            raise ValueError(
+                "No version was specified nor found in schema %r" % schema_cls)
         self._schemas[version] = schema_cls
-        if version > self._default:
-            self._default = version
 
     def get(self, version):
-        default = self._schemas.get(self._default)
-        return self._schemas.get(version, default)
+        if version not in self._schemas:
+            raise ValueError("No schema registered for version %r" % version)
+        return self._schemas[version]
 
 
 schemas = DjangoSchemaFactory()
-schemas.register(Django102Schema, '1.0.2')
-schemas.register(Django111Schema, '1.1.1')
+schemas.register(Django102Schema)
+schemas.register(Django112Schema)
+# also register the same schema for lucid's django version (which is exported
+# as 1.1.1 but is essentially 1.1.2
+schemas.register(Django112Schema, '1.1.1')

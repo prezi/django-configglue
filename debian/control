@@ -1,4 +1,4 @@
-Source: django-schemaconfig
+Source: django-configglue
 Section: python
 Priority: extra
 Build-Depends: cdbs (>= 0.4.43),
@@ -10,16 +10,18 @@ Maintainer: Ricardo Kirkner <ricardo.kirkner@canonical.com>
 Standards-Version: 3.8.3
 XS-Python-Version: current
 
-Package: python-django-schemaconfig
+Package: python-django-configglue
 Architecture: all
 XB-Python-Version: ${python:Versions}
 Depends: ${misc:Depends}, ${python:Depends},
+ python-configglue (>= 0.3)
  python-django (>= 1.0.2)
-Description: Django commands for managing schemaconfig generated settings  
- Django commands for managing schemaconfig generated settings from the command line.
- Commands allow:
-  - get value of setting
-  - list settings used (and their values)
-  - list global settings (and their values)
-  - locate definition of setting (useful when setting defined using schemaconfig)
-  - validate settings (useful when settings defined using schemaconfig)
+Description: Django commands for managing configglue generated settings
+ Django commands for managing configglue generated settings from the command line.
+ Commands are available to:
+  - get the value of a setting
+  - list all settings used (and their values)
+  - list all settings used, including django global settings (and their values)
+  - locate the definition of a setting (useful when the configuration is defined
+    throughout several files)
+  - validate settings (make sure the values match the defined schema)

@@ -1,1 +1,1 @@
-../django_schemaconfig/tests/settings.py
+django_configglue/tests/settings.py
