@@ -23,7 +23,12 @@ def get_django_settings(parser):
             result[option.upper()] = encode(value)
     return result
 
-def update_settings(parser, env):
+
+def update_settings(parser, target):
     # import config into settings module
     settings = get_django_settings(parser)
-    env.update(settings)
+    if isinstance(target, dict):
+        target.update(settings)
+    else:
+        for name, value in settings.items():
+            setattr(target, name, value)

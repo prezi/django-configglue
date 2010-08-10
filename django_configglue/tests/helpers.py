@@ -68,6 +68,11 @@ time_zone = Europe/London
         for key, value in extra_settings.items():
             setattr(settings, key, value)
 
+        if hasattr(self, 'extra_settings'):
+            for key, value in self.extra_settings.items():
+                setattr(settings, key, value)
+        self.extra_settings = extra_settings
+
         return old_module
 
     def is_setting(self, name):

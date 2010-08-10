@@ -2,8 +2,9 @@
 # Copyright 2010 Canonical Ltd.  This software is licensed under the
 # GNU Lesser General Public License version 3 (see the file LICENSE).
 
-from unittest import TestCase
 from cStringIO import StringIO
+from mock import patch
+from unittest import TestCase
 
 from configglue.pyschema.options import (DictConfigOption, IntConfigOption,
     StringConfigOption)
@@ -79,11 +80,9 @@ class DjangoSupportTestCase(TestCase):
 
 class GlueManagementUtilityTestCase(ConfigGlueDjangoCommandTestCase):
     def setUp(self):
-        self.util = GlueManagementUtility()
+        super(GlueManagementUtilityTestCase, self).setUp()
 
-    def tearDown(self):
-        # override parent method
-        pass
+        self.util = GlueManagementUtility()
 
     def execute(self):
         self.begin_capture()
@@ -123,3 +122,25 @@ class GlueManagementUtilityTestCase(ConfigGlueDjangoCommandTestCase):
         self.util.argv = ['', 'settings']
         self.execute()
         self.assertTrue('Show settings attributes' in self.capture['stdout'])
+
+    def test_execute_settings_exception(self):
+        from django.conf import settings
+        wrapped = getattr(settings, self.wrapped_settings)
+        old_CONFIGGLUE_PARSER = wrapped.__CONFIGGLUE_PARSER__
+        del wrapped.__CONFIGGLUE_PARSER__
+
+        try:
+            self.util.argv = ['', 'help']
+            self.assertRaises(SystemExit, self.execute)
+            self.assertTrue(self.util.main_help_text() in self.capture['stderr'])
+        finally:
+            wrapped.__CONFIGGLUE_PARSER__ = old_CONFIGGLUE_PARSER
+
+    @patch('django_configglue.utils.update_settings')
+    def test_execute_configglue_exception(self, mock_update_settings):
+        mock_update_settings.side_effect = Exception()
+
+        self.util.argv = ['', 'help']
+        self.assertRaises(SystemExit, self.execute)
+        self.assertTrue(self.util.main_help_text() in self.capture['stderr'])
+

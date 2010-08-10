@@ -7,9 +7,9 @@ import django
 import django.core.management
 from configglue.pyschema import schemaconfigglue
 from django.core.management import ManagementUtility, LaxOptionParser
-from django.core.management.base import BaseCommand
-from django_configglue.utils import update_settings
+from django.core.management.base import BaseCommand, handle_default_options
 from django.conf import settings
+from django_configglue import utils
 
 
 class GlueManagementUtility(ManagementUtility):
@@ -25,13 +25,20 @@ class GlueManagementUtility(ManagementUtility):
         # must be processed early.
         parser = LaxOptionParser(usage="%prog subcommand [options] [args]",
                                  version=django.get_version(),
-                                 option_list=BaseCommand.option_list,
-                                 conflict_handler='resolve')
-        configglue_parser = settings.__CONFIGGLUE_PARSER__
-        op, options, args = schemaconfigglue(configglue_parser, op=parser,
-                                             argv=self.argv)
-        self.argv = args
-        update_settings(configglue_parser, vars(settings))
+                                 option_list=BaseCommand.option_list)
+        try:
+            configglue_parser = settings.__CONFIGGLUE_PARSER__
+            parser, options, args = schemaconfigglue(configglue_parser,
+                op=parser, argv=self.argv)
+            utils.update_settings(configglue_parser, settings)
+        except AttributeError:
+            # no __CONFIGGLUE_PARSER__ found, fall back to standard django
+            # options parsing
+            options, args = parser.parse_args(self.argv)
+            handle_default_options(options)
+        except:
+            pass # Ignore any option errors at this point.
+
         try:
             subcommand = self.argv[1]
         except IndexError:
@@ -42,7 +49,7 @@ class GlueManagementUtility(ManagementUtility):
             if len(args) > 2:
                 self.fetch_command(args[2]).print_help(self.prog_name, args[2])
             else:
-                op.print_lax_help()
+                parser.print_lax_help()
                 sys.stderr.write(self.main_help_text() + '\n')
                 sys.exit(1)
         # Special-cases: We want 'django-admin.py --version' and
@@ -51,7 +58,7 @@ class GlueManagementUtility(ManagementUtility):
             # LaxOptionParser already takes care of printing the version.
             pass
         elif self.argv[1:] == ['--help']:
-            op.print_lax_help()
+            parser.print_lax_help()
             sys.stderr.write(self.main_help_text() + '\n')
         else:
             self.fetch_command(subcommand).run_from_argv(self.argv)
