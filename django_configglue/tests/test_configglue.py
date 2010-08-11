@@ -144,3 +144,8 @@ class GlueManagementUtilityTestCase(ConfigGlueDjangoCommandTestCase):
         self.assertRaises(SystemExit, self.execute)
         self.assertTrue(self.util.main_help_text() in self.capture['stderr'])
 
+    def test_execute_with_schema_options(self):
+        self.util.argv = ['', '--django_debug=False', 'help', 'settings']
+        self.execute()
+        self.assertTrue('Show settings attributes' in self.capture['stdout'])
+

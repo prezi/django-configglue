@@ -30,6 +30,8 @@ class GlueManagementUtility(ManagementUtility):
             configglue_parser = settings.__CONFIGGLUE_PARSER__
             parser, options, args = schemaconfigglue(configglue_parser,
                 op=parser, argv=self.argv)
+            # remove schema-related options from the argv list
+            self.argv = args
             utils.update_settings(configglue_parser, settings)
         except AttributeError:
             # no __CONFIGGLUE_PARSER__ found, fall back to standard django
