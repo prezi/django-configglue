@@ -10,5 +10,5 @@ setup(
     author_email='canonical-isd@lists.launchpad.net',
     license='LGPLv3',
     packages=find_packages(exclude=['testproject*']),
-    install_requires=['django >= 1.0.2-final', 'configglue >= 0.2'],
+    install_requires=['django >= 1.0.2-final', 'configglue >= 0.9pre1'],
 )
