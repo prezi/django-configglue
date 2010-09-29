@@ -1,11 +1,5 @@
-django-configglue (0.2) lucid; urgency=low
+django-configglue (0.3-0ubuntu1) maverick; urgency=low
 
-  * Support for django 1.1.1 (lucid) addded 
+  * Initial package. Closes (LP: #616025)
 
- -- Ricardo Kirkner <ricardo.kirkner@canonical.com>  Mon, 14 Jun 2010 18:25:05 -0300
-
-django-configglue (0.1) hardy; urgency=low
-
-  * Initial release.
-
- -- Ricardo Kirkner <ricardo.kirkner@canonical.com>  Thu, 08 Apr 2010 12:04:04 -0300
+ -- Ricardo Kirkner <ricardo.kirkner@canonical.com>  Tue, 10 Aug 2010 16:25:54 -0300

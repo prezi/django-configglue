@@ -1,27 +1,37 @@
 Source: django-configglue
 Section: python
-Priority: extra
+Priority: optional
+Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+XSBC-Original-Maintainer: Ricardo Kirkner <ricardo.kirkner@canonical.com>
 Build-Depends: cdbs (>= 0.4.43),
- debhelper (>= 6),
- python,
- python-central (>= 0.6),
+ debhelper (>= 7),
+ python (>= 2.5),
+ python-support,
  python-setuptools
-Maintainer: Ricardo Kirkner <ricardo.kirkner@canonical.com>
-Standards-Version: 3.8.3
-XS-Python-Version: current
+XS-Python-Version: >= 2.5
+Standards-Version: 3.9.1
+Homepage: https://launchpad.net/django-configglue
 
 Package: python-django-configglue
 Architecture: all
-XB-Python-Version: ${python:Versions}
 Depends: ${misc:Depends}, ${python:Depends},
- python-configglue (>= 0.3)
+ python-configglue (>= 0.9),
  python-django (>= 1.0.2)
-Description: Django commands for managing configglue generated settings
- Django commands for managing configglue generated settings from the command line.
+Description: Django commands for working with configglue generated settings
+ Django-configglue provides the necessary glue to work with settings
+ generated using configglue ini-style configuration files instead of using
+ plain Python modules.
+ .
+ Configglue is a library that glues together Python's optparse.OptionParser
+ and ConfigParser.ConfigParser, so that you don't have to repeat yourself
+ when you want to export the same options to a configuration file and a
+ commandline interface.
+ .
  Commands are available to:
   - get the value of a setting
   - list all settings used (and their values)
-  - list all settings used, including django global settings (and their values)
-  - locate the definition of a setting (useful when the configuration is defined
-    throughout several files)
+  - list all settings used, including django global settings (and
+    their values)
+  - locate the definition of a setting (useful when the configuration
+    is defined throughout several files)
   - validate settings (make sure the values match the defined schema)

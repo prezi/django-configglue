@@ -1,0 +1,4 @@
+include LICENSE
+graft testproject
+graft third-party
+global-exclude *.pyc

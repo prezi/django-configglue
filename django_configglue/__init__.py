@@ -1,5 +1,8 @@
-# Copyright 2010 Canonical Ltd.  This software is licensed under the
-# GNU Lesser General Public License version 3 (see the file LICENSE).
+# Copyright 2010 Canonical Ltd.
+# Copyright Django Software Foundation and individual contributors
+# This software is licensed under the
+# GNU Lesser General Public License version 3 (see the file LICENSE)
+# except where third-party/django/LICENSE applies.
 
 import sys
 
