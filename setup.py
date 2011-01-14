@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 setup(
     # metadata
     name='django-configglue',
-    version='0.3',
+    version='0.3.1',
     author='Canonical ISD Hackers',
     author_email='canonical-isd@lists.launchpad.net',
     description='Django commands for managing configglue generated settings',
@@ -35,7 +35,7 @@ setup(
 
     # content
     packages=find_packages(exclude=['testproject*']),
-    install_requires=['django >= 1.0.2-final', 'configglue >= 0.9pre1'],
+    install_requires=['django >= 1.0.2-final', 'configglue >= 0.9.1'],
 
     # tests
     test_suite='testproject.testrunner.runtests',

@@ -3,13 +3,20 @@
 # GNU Lesser General Public License version 3 (see the file LICENSE).
 
 from cStringIO import StringIO
-from mock import patch
 from unittest import TestCase
 
-from configglue.pyschema.options import (DictConfigOption, IntConfigOption,
-    StringConfigOption)
-from configglue.pyschema.parser import SchemaConfigParser, CONFIG_FILE_ENCODING
-from configglue.pyschema.schema import Schema
+from mock import patch
+from configglue.pyschema.schema import (
+    DictConfigOption,
+    IntConfigOption,
+    Schema,
+    StringConfigOption,
+)
+from configglue.pyschema.parser import (
+    CONFIG_FILE_ENCODING,
+    SchemaConfigParser,
+)
+
 from django_configglue import GlueManagementUtility
 from django_configglue.utils import (update_settings, get_django_settings,
     SETTINGS_ENCODING)

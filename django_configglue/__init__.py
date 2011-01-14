@@ -8,7 +8,7 @@ import sys
 
 import django
 import django.core.management
-from configglue.pyschema import schemaconfigglue
+from configglue.pyschema.glue import schemaconfigglue
 from django.core.management import ManagementUtility, LaxOptionParser
 from django.core.management.base import BaseCommand, handle_default_options
 from django.conf import settings

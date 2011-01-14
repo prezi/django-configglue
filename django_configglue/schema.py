@@ -1,10 +1,16 @@
 # Copyright 2010 Canonical Ltd.  This software is licensed under the
 # GNU Lesser General Public License version 3 (see the file LICENSE).
 
-from configglue.pyschema import ConfigSection
-from configglue.pyschema.options import (BoolConfigOption, DictConfigOption,
-    IntConfigOption, LinesConfigOption, StringConfigOption, TupleConfigOption)
-from configglue.pyschema.schema import Schema
+from configglue.pyschema.schema import (
+    BoolConfigOption,
+    ConfigSection,
+    DictConfigOption,
+    IntConfigOption,
+    LinesConfigOption,
+    Schema,
+    StringConfigOption,
+    TupleConfigOption,
+)
 from django import get_version
 
 

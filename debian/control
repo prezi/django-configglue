@@ -15,7 +15,7 @@ Homepage: https://launchpad.net/django-configglue
 Package: python-django-configglue
 Architecture: all
 Depends: ${misc:Depends}, ${python:Depends},
- python-configglue (>= 0.9),
+ python-configglue (>= 0.9.1),
  python-django (>= 1.0.2)
 Description: Django commands for working with configglue generated settings
  Django-configglue provides the necessary glue to work with settings

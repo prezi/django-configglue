@@ -5,10 +5,9 @@ import os
 import sys
 from optparse import make_option, OptionParser
 
+from configglue.pyschema.glue import schemaconfigglue
 from django.conf import settings, global_settings
 from django.core.management.base import BaseCommand, CommandError
-
-from configglue.pyschema import schemaconfigglue
 
 
 class Command(BaseCommand):

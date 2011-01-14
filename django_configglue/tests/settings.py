@@ -2,7 +2,7 @@
 # GNU Lesser General Public License version 3 (see the file LICENSE).
 
 import django
-from configglue.pyschema import SchemaConfigParser
+from configglue.pyschema.parser import SchemaConfigParser
 from django_configglue.utils import update_settings
 from django_configglue.schema import schemas
 

@@ -1,3 +1,9 @@
+django-configglue (0.3.1-0ubuntu1) maverick; urgency=low
+
+  * Updated code for compatibility with latest configglue (0.9.1)
+
+ -- Ricardo Kirkner <ricardo.kirkner@canonical.com>  Fri, 14 Jan 2011 09:22:52 -0300
+
 django-configglue (0.3-0ubuntu1) maverick; urgency=low
 
   * Initial package. Closes (LP: #616025)
