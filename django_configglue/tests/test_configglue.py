@@ -5,7 +5,6 @@
 from cStringIO import StringIO
 from unittest import TestCase
 
-from mock import patch
 from configglue.pyschema.schema import (
     DictConfigOption,
     IntConfigOption,
@@ -16,12 +15,22 @@ from configglue.pyschema.parser import (
     CONFIG_FILE_ENCODING,
     SchemaConfigParser,
 )
+from django.conf import settings
+from mock import patch
 
 from django_configglue import GlueManagementUtility
-from django_configglue.utils import (update_settings, get_django_settings,
-    SETTINGS_ENCODING)
-from django_configglue.schema import (schemas, BaseDjangoSchema,
-    Django102Schema, DjangoSchemaFactory)
+from django_configglue.utils import (
+    SETTINGS_ENCODING,
+    configglue,
+    get_django_settings,
+    update_settings,
+)
+from django_configglue.schema import (
+    schemas,
+    BaseDjangoSchema,
+    Django102Schema,
+    DjangoSchemaFactory,
+)
 from django_configglue.tests.helpers import ConfigGlueDjangoCommandTestCase
 
 
@@ -55,11 +64,14 @@ class DjangoSupportTestCase(TestCase):
         class MySchema(Schema):
             foo = IntConfigOption()
 
-        expected_env = {'FOO': 0}
-
         env = {}
         parser = SchemaConfigParser(MySchema())
         update_settings(parser, env)
+        expected_env = {
+            'FOO': 0,
+            'SETTINGS_ENCODING': SETTINGS_ENCODING,
+            '__CONFIGGLUE_PARSER__': parser,
+        }
         self.assertEqual(env, expected_env)
 
     def test_schemafactory_get(self):
@@ -83,6 +95,31 @@ class DjangoSupportTestCase(TestCase):
 
         schemas = DjangoSchemaFactory()
         self.assertRaises(ValueError, schemas.register, MySchema)
+
+    def test_configglue(self):
+        target = {}
+        configglue(BaseDjangoSchema, [], target)
+        # target is consistent with django's settings module
+        # except for a few keys
+        shared_key = lambda x: (not x.startswith('__') and x.upper() == x and
+            x not in ('DATABASE_SUPPORTS_TRANSACTIONS', 'SETTINGS_MODULE'))
+        expected_keys = set(filter(shared_key, settings.get_all_members()))
+        target_keys = set(filter(shared_key, target.keys()))
+
+        self.assertEqual(expected_keys, target_keys)
+
+    @patch('django_configglue.utils.update_settings')
+    @patch('django_configglue.utils.SchemaConfigParser')
+    def test_configglue_calls(self, MockSchemaConfigParser,
+        mock_update_settings):
+
+        target = {}
+        configglue(BaseDjangoSchema, [], target)
+
+        MockSchemaConfigParser.assert_called_with(BaseDjangoSchema())
+        MockSchemaConfigParser.return_value.read.assert_called_with([])
+        mock_update_settings.assert_called_with(
+            MockSchemaConfigParser.return_value, target)
 
 
 class GlueManagementUtilityTestCase(ConfigGlueDjangoCommandTestCase):

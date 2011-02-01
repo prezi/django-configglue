@@ -8,7 +8,8 @@ from django import get_version
 from django.conf import settings
 from django.core.management import ManagementUtility
 
-from helpers import ConfigGlueDjangoCommandTestCase
+from django_configglue.utils import SETTINGS_ENCODING
+from django_configglue.tests.helpers import ConfigGlueDjangoCommandTestCase
 
 
 class SettingsCommandTestCase(ConfigGlueDjangoCommandTestCase):
@@ -32,7 +33,8 @@ class SettingsCommandTestCase(ConfigGlueDjangoCommandTestCase):
         expected_values = [
             "ROOT_URLCONF = 'urls'",
             "SITE_ID = 1",
-            "SETTINGS_MODULE = 'django_configglue.tests.settings'"
+            "SETTINGS_MODULE = 'django_configglue.tests.settings'",
+            "SETTINGS_ENCODING = '%s'" % SETTINGS_ENCODING,
         ]
         if django.VERSION[:2] >= (1, 1):
             expected_values.append("DATABASE_SUPPORTS_TRANSACTIONS = True")
@@ -90,6 +92,18 @@ class SettingsCommandTestCase(ConfigGlueDjangoCommandTestCase):
             self.assertEqual(self.capture['stdout'].strip(), expected_output)
         finally:
             wrapped.__CONFIGGLUE_PARSER__ = old_CONFIGGLUE_PARSER
+
+    def test_wrapped_settings(self):
+        old_VERSION = django.VERSION
+
+        try:
+            django.VERSION = (1, 0, 2)
+            self.assertEqual(self.wrapped_settings, '_target')
+
+            django.VERSION = (1, 1, 2)
+            self.assertEqual(self.wrapped_settings, '_wrapped')
+        finally:
+            django.VERSION = old_VERSION
 
 
 class ValidateCommandTestCase(ConfigGlueDjangoCommandTestCase):

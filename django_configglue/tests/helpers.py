@@ -5,7 +5,7 @@ import os
 import sys
 from StringIO import StringIO
 
-import django.conf
+import django
 from django.core import management
 from django.conf import settings
 from django.test import TestCase
