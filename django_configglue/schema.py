@@ -1,5 +1,6 @@
 # Copyright 2010 Canonical Ltd.  This software is licensed under the
 # GNU Lesser General Public License version 3 (see the file LICENSE).
+import logging
 
 from configglue.pyschema.schema import (
     BoolConfigOption,
@@ -482,9 +483,25 @@ class DjangoSchemaFactory(object):
                 "No version was specified nor found in schema %r" % schema_cls)
         self._schemas[version] = schema_cls
 
-    def get(self, version):
+    def get(self, version, strict=True):
         if version not in self._schemas:
-            raise ValueError("No schema registered for version %r" % version)
+            msg = "No schema registered for version %r" % version
+            if strict:
+                raise ValueError(msg)
+            else:
+                logging.warn(msg)
+
+            versions = sorted(self._schemas.keys())
+            if not versions:
+                raise ValueError("No schemas registered")
+
+            last = versions[0]
+            for v in sorted(self._schemas.keys()):
+                if version < v:
+                    break
+                last = v
+            version = last
+            logging.warn("Falling back to schema for version %r" % version)
         return self._schemas[version]
 
 

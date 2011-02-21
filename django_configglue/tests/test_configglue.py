@@ -81,6 +81,58 @@ class DjangoSupportTestCase(TestCase):
         # test get invalid version
         self.assertRaises(ValueError, schemas.get, '1.1')
 
+    @patch('django_configglue.schema.logging')
+    def test_schemafactory_get_nonexisting_too_old(self, mock_logging):
+        schema = schemas.get('0.96', strict=False)
+
+        django_102 = schemas.get('1.0.2')
+        self.assertEqual(schema, django_102)
+        self.assertRaises(ValueError, schemas.get, '0.96')
+
+        self.assertEqual(mock_logging.warn.call_args_list[0][0][0],
+            "No schema registered for version '0.96'")
+        self.assertEqual(mock_logging.warn.call_args_list[1][0][0],
+            "Falling back to schema for version '1.0.2'")
+
+    @patch('django_configglue.schema.logging')
+    def test_schemafactory_get_nonexisting(self, mock_logging):
+        schema = schemas.get('1.0.3', strict=False)
+
+        django_102 = schemas.get('1.0.2')
+        self.assertEqual(schema, django_102)
+        self.assertRaises(ValueError, schemas.get, '1.0.3')
+
+        self.assertEqual(mock_logging.warn.call_args_list[0][0][0],
+            "No schema registered for version '1.0.3'")
+        self.assertEqual(mock_logging.warn.call_args_list[1][0][0],
+            "Falling back to schema for version '1.0.2'")
+
+    @patch('django_configglue.schema.logging')
+    def test_schemafactory_get_nonexisting_too_new(self, mock_logging):
+        schema = schemas.get('1.2.0', strict=False)
+
+        django_112 = schemas.get('1.1.2')
+        self.assertEqual(schema, django_112)
+        self.assertRaises(ValueError, schemas.get, '1.2.0')
+
+        self.assertEqual(mock_logging.warn.call_args_list[0][0][0],
+            "No schema registered for version '1.2.0'")
+        self.assertEqual(mock_logging.warn.call_args_list[1][0][0],
+            "Falling back to schema for version '1.1.2'")
+
+    @patch('django_configglue.schema.logging')
+    def test_schemafactory_get_no_versions_registered(self, mock_logging):
+        schemas = DjangoSchemaFactory()
+        try:
+            schemas.get('1.0.2', strict=False)
+        except ValueError, e:
+            self.assertEqual(str(e), "No schemas registered")
+        else:
+            self.fail("ValueError not raised")
+
+        mock_logging.warn.assert_called_with(
+            "No schema registered for version '1.0.2'")
+
     def test_schema_versions(self):
         django_102 = schemas.get('1.0.2')()
         django_112 = schemas.get('1.1.2')()
