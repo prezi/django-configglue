@@ -3,6 +3,7 @@
 
 import os
 import sys
+import textwrap
 from StringIO import StringIO
 
 import django
@@ -15,13 +16,27 @@ class ConfigGlueDjangoCommandTestCase(TestCase):
     COMMAND = ''
 
     def setUp(self):
-        config = """
-[django]
-database_engine = sqlite3
-database_name = :memory:
-installed_apps = django_configglue
-time_zone = Europe/London
-"""
+        config = textwrap.dedent("""
+            [django]
+            database_engine = sqlite3
+            database_name = :memory:
+            installed_apps = django_configglue
+            time_zone = Europe/London
+        """)
+
+        if django.VERSION[:2] > (1, 1):
+            # since 1.2 use multi database settings format
+            config += textwrap.dedent("""
+                databases = databases
+
+                [databases]
+                default = db_default
+
+                [db_default]
+                engine = sqlite3
+                name = :memory:
+            """)
+
         self.set_config(config)
         self._DJANGO_SETTINGS_MODULE = self.load_settings()
 
@@ -39,10 +54,13 @@ time_zone = Europe/London
 
     @property
     def wrapped_settings(self):
-        if django.VERSION[:2] < (1, 1):
-            wrapped = '_target'
-        else:
+        wrapped = '_target'
+        if django.VERSION[:3] > (1, 0, 2):
             wrapped = '_wrapped'
+        # make sure the wrapped object is not None
+        # by just querying it for a setting
+        getattr(settings, 'DEBUG', False)
+        assert(getattr(settings, wrapped) != None)
         return wrapped
 
     def load_settings(self, module='django_configglue.tests.settings'):
@@ -51,9 +69,8 @@ time_zone = Europe/London
         if old_module in sys.modules:
             del sys.modules[old_module]
         # keep runtime settings
-        if django.VERSION[:2] < (1, 1):
-            extra_settings = {}
-        else:
+        extra_settings = {}
+        if django.VERSION[:2] == (1, 1):
             extra_settings = {
                 'DATABASE_NAME': settings.DATABASE_NAME,
                 'DATABASE_SUPPORTS_TRANSACTIONS': getattr(

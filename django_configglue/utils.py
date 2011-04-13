@@ -55,3 +55,4 @@ def configglue(schema_class, configs, target):
     scp = SchemaConfigParser(schema_class())
     scp.read(configs)
     update_settings(scp, target)
+    return scp

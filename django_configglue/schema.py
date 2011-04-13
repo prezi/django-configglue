@@ -1,6 +1,7 @@
 # Copyright 2010 Canonical Ltd.  This software is licensed under the
 # GNU Lesser General Public License version 3 (see the file LICENSE).
 import logging
+from copy import deepcopy
 
 from configglue.pyschema.schema import (
     BoolConfigOption,
@@ -21,8 +22,20 @@ from django import get_version
 gettext_noop = lambda s: s
 
 
+class UpperCaseDictConfigOption(DictConfigOption):
+    """ A DictConfigOption with all upper-case keys. """
+    def parse(self, section, parser=None, raw=False):
+        parsed = super(UpperCaseDictConfigOption, self).parse(
+            section, parser, raw)
+        result = {}
+        for k, v in parsed.items():
+            result[k.upper()] = v
+        return result
+
 
 class BaseDjangoSchema(Schema):
+    version = '1.0.2 final'
+
     # Sections
     django = ConfigSection('django')
 
@@ -256,6 +269,9 @@ class BaseDjangoSchema(Schema):
              "secret-key hashing algorithms. Set this in your settings, or "
              "Django will complain loudly")
 
+    django.jing_path = StringConfigOption(default='/usr/bin/jing',
+        help="Path to the 'jing' executable -- needed to validate XMLFields")
+
     django.default_file_storage = StringConfigOption(
         default='django.core.files.storage.FileSystemStorage',
         help="Default file storage mechanism that holds media")
@@ -452,22 +468,499 @@ class BaseDjangoSchema(Schema):
     django.root_urlconf = StringConfigOption(default='urls')
 
 
-class Django102Schema(BaseDjangoSchema):
-    version = '1.0.2'
-
-    def __init__(self, *args, **kwargs):
-        super(Django102Schema, self).__init__(*args, **kwargs)
-
-        ################
-        # CORE         #
-        ################
-
-        self.django.jing_path = StringConfigOption(default='/usr/bin/jing',
-            help="Path to the 'jing' executable -- needed to validate XMLFields")
-
-
 class Django112Schema(BaseDjangoSchema):
     version = '1.1.2'
+
+    # sections
+    django = deepcopy(BaseDjangoSchema.django)
+
+    ################
+    # CORE         #
+    ################
+
+    # update default value
+    django.languages.default = (
+        ('ar', gettext_noop('Arabic')),
+        ('bg', gettext_noop('Bulgarian')),
+        ('bn', gettext_noop('Bengali')),
+        ('bs', gettext_noop('Bosnian')),
+        ('ca', gettext_noop('Catalan')),
+        ('cs', gettext_noop('Czech')),
+        ('cy', gettext_noop('Welsh')),
+        ('da', gettext_noop('Danish')),
+        ('de', gettext_noop('German')),
+        ('el', gettext_noop('Greek')),
+        ('en', gettext_noop('English')),
+        ('es', gettext_noop('Spanish')),
+        ('es-ar', gettext_noop('Argentinean Spanish')),
+        ('et', gettext_noop('Estonian')),
+        ('eu', gettext_noop('Basque')),
+        ('fa', gettext_noop('Persian')),
+        ('fi', gettext_noop('Finnish')),
+        ('fr', gettext_noop('French')),
+        ('fy-nl', gettext_noop('Frisian')),
+        ('ga', gettext_noop('Irish')),
+        ('gl', gettext_noop('Galician')),
+        ('he', gettext_noop('Hebrew')),
+        ('hi', gettext_noop('Hindi')),
+        ('hr', gettext_noop('Croatian')),
+        ('hu', gettext_noop('Hungarian')),
+        ('is', gettext_noop('Icelandic')),
+        ('it', gettext_noop('Italian')),
+        ('ja', gettext_noop('Japanese')),
+        ('ka', gettext_noop('Georgian')),
+        ('km', gettext_noop('Khmer')),
+        ('kn', gettext_noop('Kannada')),
+        ('ko', gettext_noop('Korean')),
+        ('lt', gettext_noop('Lithuanian')),
+        ('lv', gettext_noop('Latvian')),
+        ('mk', gettext_noop('Macedonian')),
+        ('nl', gettext_noop('Dutch')),
+        ('no', gettext_noop('Norwegian')),
+        ('pl', gettext_noop('Polish')),
+        ('pt', gettext_noop('Portuguese')),
+        ('pt-br', gettext_noop('Brazilian Portuguese')),
+        ('ro', gettext_noop('Romanian')),
+        ('ru', gettext_noop('Russian')),
+        ('sk', gettext_noop('Slovak')),
+        ('sl', gettext_noop('Slovenian')),
+        ('sq', gettext_noop('Albanian')),
+        ('sr', gettext_noop('Serbian')),
+        ('sr-latn', gettext_noop('Serbian Latin')),
+        ('sv', gettext_noop('Swedish')),
+        ('ta', gettext_noop('Tamil')),
+        ('te', gettext_noop('Telugu')),
+        ('th', gettext_noop('Thai')),
+        ('tr', gettext_noop('Turkish')),
+        ('uk', gettext_noop('Ukrainian')),
+        ('zh-cn', gettext_noop('Simplified Chinese')),
+        ('zh-tw', gettext_noop('Traditional Chinese')),
+    )
+
+
+class Django125Schema(Django112Schema):
+    version = '1.2.5'
+
+    # sections
+    django = deepcopy(Django112Schema.django)
+
+    ################
+    # CORE         #
+    ################
+
+    # update default value
+    django.languages.default = [
+        ('ar', gettext_noop('Arabic')),
+        ('bg', gettext_noop('Bulgarian')),
+        ('bn', gettext_noop('Bengali')),
+        ('bs', gettext_noop('Bosnian')),
+        ('ca', gettext_noop('Catalan')),
+        ('cs', gettext_noop('Czech')),
+        ('cy', gettext_noop('Welsh')),
+        ('da', gettext_noop('Danish')),
+        ('de', gettext_noop('German')),
+        ('el', gettext_noop('Greek')),
+        ('en', gettext_noop('English')),
+        ('en-gb', gettext_noop('British English')),
+        ('es', gettext_noop('Spanish')),
+        ('es-ar', gettext_noop('Argentinian Spanish')),
+        ('et', gettext_noop('Estonian')),
+        ('eu', gettext_noop('Basque')),
+        ('fa', gettext_noop('Persian')),
+        ('fi', gettext_noop('Finnish')),
+        ('fr', gettext_noop('French')),
+        ('fy-nl', gettext_noop('Frisian')),
+        ('ga', gettext_noop('Irish')),
+        ('gl', gettext_noop('Galician')),
+        ('he', gettext_noop('Hebrew')),
+        ('hi', gettext_noop('Hindi')),
+        ('hr', gettext_noop('Croatian')),
+        ('hu', gettext_noop('Hungarian')),
+        ('id', gettext_noop('Indonesian')),
+        ('is', gettext_noop('Icelandic')),
+        ('it', gettext_noop('Italian')),
+        ('ja', gettext_noop('Japanese')),
+        ('ka', gettext_noop('Georgian')),
+        ('km', gettext_noop('Khmer')),
+        ('kn', gettext_noop('Kannada')),
+        ('ko', gettext_noop('Korean')),
+        ('lt', gettext_noop('Lithuanian')),
+        ('lv', gettext_noop('Latvian')),
+        ('mk', gettext_noop('Macedonian')),
+        ('ml', gettext_noop('Malayalam')),
+        ('mn', gettext_noop('Mongolian')),
+        ('nl', gettext_noop('Dutch')),
+        ('no', gettext_noop('Norwegian')),
+        ('nb', gettext_noop('Norwegian Bokmal')),
+        ('nn', gettext_noop('Norwegian Nynorsk')),
+        ('pl', gettext_noop('Polish')),
+        ('pt', gettext_noop('Portuguese')),
+        ('pt-br', gettext_noop('Brazilian Portuguese')),
+        ('ro', gettext_noop('Romanian')),
+        ('ru', gettext_noop('Russian')),
+        ('sk', gettext_noop('Slovak')),
+        ('sl', gettext_noop('Slovenian')),
+        ('sq', gettext_noop('Albanian')),
+        ('sr', gettext_noop('Serbian')),
+        ('sr-latn', gettext_noop('Serbian Latin')),
+        ('sv', gettext_noop('Swedish')),
+        ('ta', gettext_noop('Tamil')),
+        ('te', gettext_noop('Telugu')),
+        ('th', gettext_noop('Thai')),
+        ('tr', gettext_noop('Turkish')),
+        ('uk', gettext_noop('Ukrainian')),
+        ('vi', gettext_noop('Vietnamese')),
+        ('zh-cn', gettext_noop('Simplified Chinese')),
+        ('zh-tw', gettext_noop('Traditional Chinese')),
+    ]
+
+    django.use_l10n = BoolConfigOption(
+        default=True,
+        help="If you set this to False, Django will not format dates, "
+            "numbers and calendars according to the current locale")
+
+    django.databases = DictConfigOption(
+        item=UpperCaseDictConfigOption(spec={
+            'engine': StringConfigOption(default='django.db.backends.'),
+            'name': StringConfigOption(),
+            'user': StringConfigOption(),
+            'password': StringConfigOption(),
+            'host': StringConfigOption(),
+            'port': StringConfigOption(),
+        }),
+        default={
+            'default': {
+                'engine': 'django.db.backends.',
+                'name': '',
+                'user': '',
+                'password': '',
+                'host': '',
+                'port': '',
+            }
+        })
+    django.database_routers = LinesConfigOption(
+        item=StringConfigOption(),
+        help="Classes used to implement db routing behaviour")
+
+    django.email_backend = StringConfigOption(
+        default='django.core.mail.backends.smtp.EmailBackend',
+        help="The email backend to use. For possible shortcuts see "
+            "django.core.mail. The default is to use the SMTP backend. "
+            "Third party backends can be specified by providing a Python "
+            "path to a module that defines an EmailBackend class.")
+
+    django.installed_apps.default = [
+        'django.contrib.auth',
+        'django.contrib.contenttypes',
+        'django.contrib.sessions',
+        'django.contrib.sites',
+        'django.contrib.messages',
+    ]
+
+    django.template_loaders.default = [
+        'django.template.loaders.filesystem.Loader',
+        'django.template.loaders.app_directories.Loader',
+    ]
+
+    django.template_context_processors.default = [
+        'django.contrib.auth.context_processors.auth',
+        'django.core.context_processors.debug',
+        'django.core.context_processors.i18n',
+        'django.core.context_processors.media',
+        'django.contrib.messages.context_processors.messages',
+    ]
+
+    django.format_module_path = StringConfigOption(
+        null=True, default=None,
+        help="Python module path where user will place custom format "
+            "definition. The directory where this setting is pointing "
+            "should contain subdirectories named as the locales, "
+            "containing a formats.py file")
+    django.short_date_format = StringConfigOption(
+        default='m/d/Y',
+        help="Default short formatting for date objects")
+    django.short_datetime_format = StringConfigOption(
+        default='m/d/Y P',
+        help="Default short formatting for datetime objects")
+    django.date_input_formats = LinesConfigOption(
+        item=StringConfigOption(),
+        default=[
+            '%%Y-%%m-%%d', '%%m/%%d/%%Y', '%%m/%%d/%%y', # '2006-10-25', '10/25/2006', '10/25/06'
+            '%%b %%d %%Y', '%%b %%d, %%Y',               # 'Oct 25 2006', 'Oct 25, 2006'
+            '%%d %%b %%Y', '%%d %%b, %%Y',               # '25 Oct 2006', '25 Oct, 2006'
+            '%%B %%d %%Y', '%%B %%d, %%Y',               # 'October 25 2006', 'October 25, 2006'
+            '%%d %%B %%Y', '%%d %%B, %%Y',               # '25 October 2006', '25 October, 2006'
+        ],
+        help="Default formats to be used when parsing dates from input "
+            "boxes, in order")
+    django.time_input_formats = LinesConfigOption(
+        item=StringConfigOption(),
+        default=[
+            '%%H:%%M:%%S',     # '14:30:59'
+            '%%H:%%M',         # '14:30'
+        ],
+        help="Default formats to be used when parsing times from input "
+            "boxes, in order")
+    django.datetime_input_formats = LinesConfigOption(
+        item=StringConfigOption(),
+        default=[
+            '%%Y-%%m-%%d %%H:%%M:%%S',     # '2006-10-25 14:30:59'
+            '%%Y-%%m-%%d %%H:%%M',         # '2006-10-25 14:30'
+            '%%Y-%%m-%%d',                 # '2006-10-25'
+            '%%m/%%d/%%Y %%H:%%M:%%S',     # '10/25/2006 14:30:59'
+            '%%m/%%d/%%Y %%H:%%M',         # '10/25/2006 14:30'
+            '%%m/%%d/%%Y',                 # '10/25/2006'
+            '%%m/%%d/%%y %%H:%%M:%%S',     # '10/25/06 14:30:59'
+            '%%m/%%d/%%y %%H:%%M',         # '10/25/06 14:30'
+            '%%m/%%d/%%y',                 # '10/25/06'
+        ],
+        help="Default formats to be used when parsing dates and times "
+            "from input boxes, in order")
+
+    django.first_day_of_week = IntConfigOption(
+        default=0,
+        help="First day of week, to be used on calendars. 0 means Sunday, "
+            "1 means Monday...")
+    django.decimal_separator = StringConfigOption(
+        default='.',
+        help="Decimal separator symbol")
+    django.use_thousand_separator = BoolConfigOption(
+        default=False,
+        help="Boolean that sets whether to add thousand separator when "
+            "formatting numbers")
+    django.number_grouping = IntConfigOption(
+        default=0,
+        help="Number of digits that will be together, when splitting them "
+            "by THOUSAND_SEPARATOR. 0 means no grouping, 3 means "
+            "splitting by thousands...")
+    django.thousand_separator = StringConfigOption(
+        default=',',
+        help="Thousand separator symbol")
+
+    ##############
+    # MIDDLEWARE #
+    ##############
+
+    django.middleware_classes.default = [
+        'django.middleware.common.CommonMiddleware',
+        'django.contrib.sessions.middleware.SessionMiddleware',
+        'django.middleware.csrf.CsrfViewMiddleware',
+        'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'django.contrib.messages.middleware.MessageMiddleware',
+    ]
+
+    ########
+    # CSRF #
+    ########
+
+    django.csrf_failure_view = StringConfigOption(
+        default='django.views.csrf.csrf_failure',
+        help="Dotted path to callable to be used as view when a request "
+            "is rejected by the CSRF middleware")
+    django.csrf_cookie_name = StringConfigOption(
+        default='csrftoken',
+        help="Name for CSRF cookie")
+    django.csrf_cookie_domain = StringConfigOption(
+        null=True,
+        help="Domain for CSRF cookie")
+
+    ############
+    # MESSAGES #
+    ############
+
+    django.message_storage = StringConfigOption(
+        default='django.contrib.messages.storage.user_messages.'
+            'LegacyFallbackStorage',
+        help="Class to be used as messages backend")
+
+    ###########
+    # TESTING #
+    ###########
+
+    django.test_runner.default = (
+        'django.test.simple.DjangoTestSuiteRunner')
+    django.test_runner.help = (
+        "The name of the class to use to run the test suite")
+
+
+class Django13Schema(Django125Schema):
+    version = '1.3'
+
+    # sections
+    django = deepcopy(Django125Schema.django)
+
+    ################
+    # CORE         #
+    ################
+
+    # update default value
+    django.languages.default = [
+        ('ar', gettext_noop('Arabic')),
+        ('az', gettext_noop('Azerbaijani')),
+        ('bg', gettext_noop('Bulgarian')),
+        ('bn', gettext_noop('Bengali')),
+        ('bs', gettext_noop('Bosnian')),
+        ('ca', gettext_noop('Catalan')),
+        ('cs', gettext_noop('Czech')),
+        ('cy', gettext_noop('Welsh')),
+        ('da', gettext_noop('Danish')),
+        ('de', gettext_noop('German')),
+        ('el', gettext_noop('Greek')),
+        ('en', gettext_noop('English')),
+        ('en-gb', gettext_noop('British English')),
+        ('es', gettext_noop('Spanish')),
+        ('es-ar', gettext_noop('Argentinian Spanish')),
+        ('es-mx', gettext_noop('Mexican Spanish')),
+        ('es-ni', gettext_noop('Nicaraguan Spanish')),
+        ('et', gettext_noop('Estonian')),
+        ('eu', gettext_noop('Basque')),
+        ('fa', gettext_noop('Persian')),
+        ('fi', gettext_noop('Finnish')),
+        ('fr', gettext_noop('French')),
+        ('fy-nl', gettext_noop('Frisian')),
+        ('ga', gettext_noop('Irish')),
+        ('gl', gettext_noop('Galician')),
+        ('he', gettext_noop('Hebrew')),
+        ('hi', gettext_noop('Hindi')),
+        ('hr', gettext_noop('Croatian')),
+        ('hu', gettext_noop('Hungarian')),
+        ('id', gettext_noop('Indonesian')),
+        ('is', gettext_noop('Icelandic')),
+        ('it', gettext_noop('Italian')),
+        ('ja', gettext_noop('Japanese')),
+        ('ka', gettext_noop('Georgian')),
+        ('km', gettext_noop('Khmer')),
+        ('kn', gettext_noop('Kannada')),
+        ('ko', gettext_noop('Korean')),
+        ('lt', gettext_noop('Lithuanian')),
+        ('lv', gettext_noop('Latvian')),
+        ('mk', gettext_noop('Macedonian')),
+        ('ml', gettext_noop('Malayalam')),
+        ('mn', gettext_noop('Mongolian')),
+        ('nl', gettext_noop('Dutch')),
+        ('no', gettext_noop('Norwegian')),
+        ('nb', gettext_noop('Norwegian Bokmal')),
+        ('nn', gettext_noop('Norwegian Nynorsk')),
+        ('pa', gettext_noop('Punjabi')),
+        ('pl', gettext_noop('Polish')),
+        ('pt', gettext_noop('Portuguese')),
+        ('pt-br', gettext_noop('Brazilian Portuguese')),
+        ('ro', gettext_noop('Romanian')),
+        ('ru', gettext_noop('Russian')),
+        ('sk', gettext_noop('Slovak')),
+        ('sl', gettext_noop('Slovenian')),
+        ('sq', gettext_noop('Albanian')),
+        ('sr', gettext_noop('Serbian')),
+        ('sr-latn', gettext_noop('Serbian Latin')),
+        ('sv', gettext_noop('Swedish')),
+        ('ta', gettext_noop('Tamil')),
+        ('te', gettext_noop('Telugu')),
+        ('th', gettext_noop('Thai')),
+        ('tr', gettext_noop('Turkish')),
+        ('uk', gettext_noop('Ukrainian')),
+        ('ur', gettext_noop('Urdu')),
+        ('vi', gettext_noop('Vietnamese')),
+        ('zh-cn', gettext_noop('Simplified Chinese')),
+        ('zh-tw', gettext_noop('Traditional Chinese')),
+    ]
+
+    django.template_context_processors.default = [
+        'django.contrib.auth.context_processors.auth',
+        'django.core.context_processors.debug',
+        'django.core.context_processors.i18n',
+        'django.core.context_processors.media',
+        'django.core.context_processors.static',
+        'django.contrib.messages.context_processors.messages',
+    ]
+
+    django.static_root = StringConfigOption(
+        default='',
+        help='Absolute path to the directory that holds static files.')
+
+    django.static_url = StringConfigOption(
+        null=True, default=None,
+        help='URL that handles the static files served from STATIC_ROOT.')
+
+    ############
+    # SESSIONS #
+    ############
+
+    django.session_cookie_httponly = BoolConfigOption(
+        default=False,
+        help='Whether to use the non-RFC standard htt pOnly flag (IE, FF3+, others)')
+
+    #########
+    # CACHE #
+    #########
+
+    # remove obsoleted setting
+    del django.cache_backend
+
+    django.caches = DictConfigOption()
+    django.cache_middleware_alias = StringConfigOption(default='default')
+
+    ############
+    # COMMENTS #
+    ############
+
+    django.profanities_list.default = ()
+
+    ###########
+    # LOGGING #
+    ###########
+
+    django.logging_config = StringConfigOption(
+        default='django.utils.log.dictConfig',
+        help='The callable to use to configure logging')
+    django.logging = DictConfigOption(
+        spec={
+            'version': IntConfigOption(default=1),
+            'disable_existing_loggers': BoolConfigOption(default=False),
+            'handlers': DictConfigOption(
+                spec={
+                    'mail_admins': DictConfigOption(
+                        spec={
+                            'level': StringConfigOption(default='ERROR'),
+                            'class': StringConfigOption(
+                                default='django.utils.log.AdminEmailHandler'),
+                        }),
+                }),
+            'loggers': DictConfigOption(
+                spec={
+                    'django.request': DictConfigOption(
+                        spec={
+                            'handlers': LinesConfigOption(
+                                item=StringConfigOption(),
+                                default=['mail_admins']),
+                            'level': StringConfigOption(default='ERROR'),
+                            'propagate': BoolConfigOption(default=False),
+                        }),
+                }),
+        },
+        help='The default logging configuration. This sends an email to the '
+            'site admins on every HTTP 500 error. All other records are sent '
+            'to the bit bucket.')
+
+    ###############
+    # STATICFILES #
+    ###############
+
+    django.staticfiles_dirs = LinesConfigOption(
+        item=StringConfigOption(),
+        help='A list of locations of additional static files')
+    django.staticfiles_storage = StringConfigOption(
+        default='django.contrib.staticfiles.storage.StaticFilesStorage',
+        help='The default file storage backend used during the build process')
+    django.staticfiles_finders = LinesConfigOption(
+        item=StringConfigOption(),
+        default=[
+            'django.contrib.staticfiles.finders.FileSystemFinder',
+            'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+        ],
+        help='List of finder classes that know how to find static files in '
+            'various locations.')
+
+    django.admin_media_prefix.default = '/static/admin/'
 
 
 class DjangoSchemaFactory(object):
@@ -506,8 +999,9 @@ class DjangoSchemaFactory(object):
 
 
 schemas = DjangoSchemaFactory()
-schemas.register(Django102Schema)
+schemas.register(BaseDjangoSchema, '1.0.2 final')
+schemas.register(BaseDjangoSchema, '1.0.4')
 schemas.register(Django112Schema)
-# also register the same schema for lucid's django version (which is exported
-# as 1.1.1 but is essentially 1.1.2
-schemas.register(Django112Schema, '1.1.1')
+schemas.register(Django112Schema, '1.1.4')
+schemas.register(Django125Schema)
+schemas.register(Django13Schema)

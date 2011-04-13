@@ -2,9 +2,11 @@
 # Copyright 2010 Canonical Ltd.  This software is licensed under the
 # GNU Lesser General Public License version 3 (see the file LICENSE).
 
+import textwrap
 from cStringIO import StringIO
 from unittest import TestCase
 
+import django
 from configglue.pyschema.schema import (
     DictConfigOption,
     IntConfigOption,
@@ -26,10 +28,10 @@ from django_configglue.utils import (
     update_settings,
 )
 from django_configglue.schema import (
-    schemas,
     BaseDjangoSchema,
-    Django102Schema,
     DjangoSchemaFactory,
+    UpperCaseDictConfigOption,
+    schemas,
 )
 from django_configglue.tests.helpers import ConfigGlueDjangoCommandTestCase
 
@@ -38,8 +40,9 @@ class DjangoSupportTestCase(TestCase):
     def test_get_django_settings(self):
         class MySchema(Schema):
             foo = IntConfigOption()
-            bar = DictConfigOption({'baz': IntConfigOption(),
-                                    'BAZ': IntConfigOption()})
+            bar = DictConfigOption(
+                spec={'baz': IntConfigOption(),
+                      'BAZ': IntConfigOption()})
 
         expected = {'FOO': 0, 'BAR': {'baz': 0, 'BAZ': 0}}
 
@@ -76,7 +79,7 @@ class DjangoSupportTestCase(TestCase):
 
     def test_schemafactory_get(self):
         # test get valid version
-        self.assertEqual(schemas.get('1.0.2'), Django102Schema)
+        self.assertEqual(schemas.get('1.0.2 final'), BaseDjangoSchema)
 
         # test get invalid version
         self.assertRaises(ValueError, schemas.get, '1.1')
@@ -85,64 +88,63 @@ class DjangoSupportTestCase(TestCase):
     def test_schemafactory_get_nonexisting_too_old(self, mock_logging):
         schema = schemas.get('0.96', strict=False)
 
-        django_102 = schemas.get('1.0.2')
+        django_102 = schemas.get('1.0.2 final')
         self.assertEqual(schema, django_102)
         self.assertRaises(ValueError, schemas.get, '0.96')
 
         self.assertEqual(mock_logging.warn.call_args_list[0][0][0],
             "No schema registered for version '0.96'")
         self.assertEqual(mock_logging.warn.call_args_list[1][0][0],
-            "Falling back to schema for version '1.0.2'")
+            "Falling back to schema for version '1.0.2 final'")
 
     @patch('django_configglue.schema.logging')
     def test_schemafactory_get_nonexisting(self, mock_logging):
         schema = schemas.get('1.0.3', strict=False)
 
-        django_102 = schemas.get('1.0.2')
+        django_102 = schemas.get('1.0.2 final')
         self.assertEqual(schema, django_102)
         self.assertRaises(ValueError, schemas.get, '1.0.3')
 
         self.assertEqual(mock_logging.warn.call_args_list[0][0][0],
             "No schema registered for version '1.0.3'")
         self.assertEqual(mock_logging.warn.call_args_list[1][0][0],
-            "Falling back to schema for version '1.0.2'")
+            "Falling back to schema for version '1.0.2 final'")
 
     @patch('django_configglue.schema.logging')
     def test_schemafactory_get_nonexisting_too_new(self, mock_logging):
         schema = schemas.get('1.2.0', strict=False)
 
-        django_112 = schemas.get('1.1.2')
+        django_112 = schemas.get('1.1.4')
         self.assertEqual(schema, django_112)
         self.assertRaises(ValueError, schemas.get, '1.2.0')
 
         self.assertEqual(mock_logging.warn.call_args_list[0][0][0],
             "No schema registered for version '1.2.0'")
         self.assertEqual(mock_logging.warn.call_args_list[1][0][0],
-            "Falling back to schema for version '1.1.2'")
+            "Falling back to schema for version '1.1.4'")
 
     @patch('django_configglue.schema.logging')
     def test_schemafactory_get_no_versions_registered(self, mock_logging):
         schemas = DjangoSchemaFactory()
         try:
-            schemas.get('1.0.2', strict=False)
+            schemas.get('1.0.2 final', strict=False)
         except ValueError, e:
             self.assertEqual(str(e), "No schemas registered")
         else:
             self.fail("ValueError not raised")
 
         mock_logging.warn.assert_called_with(
-            "No schema registered for version '1.0.2'")
+            "No schema registered for version '1.0.2 final'")
 
     def test_schema_versions(self):
-        django_102 = schemas.get('1.0.2')()
+        django_102 = schemas.get('1.0.2 final')()
         django_112 = schemas.get('1.1.2')()
-        self.assertEqual(django_102.version, '1.0.2')
-        self.assertTrue(hasattr(django_102.django, 'jing_path'))
+        self.assertEqual(django_102.version, '1.0.2 final')
         self.assertEqual(django_112.version, '1.1.2')
-        self.assertFalse(hasattr(django_112.django, 'jing_path'))
+        self.assertFalse(django_102 is django_112)
 
     def test_register_without_version(self):
-        class MySchema(BaseDjangoSchema):
+        class MySchema(Schema):
             pass
 
         schemas = DjangoSchemaFactory()
@@ -150,12 +152,13 @@ class DjangoSupportTestCase(TestCase):
 
     def test_configglue(self):
         target = {}
-        configglue(BaseDjangoSchema, [], target)
+        schema = schemas.get(django.get_version(), strict=False)
+        configglue(schema, [], target)
         # target is consistent with django's settings module
         # except for a few keys
         shared_key = lambda x: (not x.startswith('__') and x.upper() == x and
             x not in ('DATABASE_SUPPORTS_TRANSACTIONS', 'SETTINGS_MODULE'))
-        expected_keys = set(filter(shared_key, settings.get_all_members()))
+        expected_keys = set(filter(shared_key, dir(settings)))
         target_keys = set(filter(shared_key, target.keys()))
 
         self.assertEqual(expected_keys, target_keys)
@@ -244,4 +247,23 @@ class GlueManagementUtilityTestCase(ConfigGlueDjangoCommandTestCase):
         self.util.argv = ['', '--django_debug=False', 'help', 'settings']
         self.execute()
         self.assertTrue('Show settings attributes' in self.capture['stdout'])
+
+
+class UpperCaseDictConfigOptionTestCase(TestCase):
+    def test_parse(self):
+        class MySchema(Schema):
+            foo = UpperCaseDictConfigOption()
+        config = StringIO(textwrap.dedent("""
+            [__main__]
+            foo = mydict
+            [mydict]
+            bar = 42
+        """))
+
+        schema = MySchema()
+        parser = SchemaConfigParser(schema)
+        parser.readfp(config)
+        result = schema.foo.parse('mydict', parser)
+
+        self.assertEqual(result, {'BAR': '42'})
 

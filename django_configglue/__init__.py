@@ -42,7 +42,8 @@ class GlueManagementUtility(ManagementUtility):
             options, args = parser.parse_args(self.argv)
             handle_default_options(options)
         except:
-            pass # Ignore any option errors at this point.
+            # Ignore any option errors at this point.
+            args = self.argv
 
         try:
             subcommand = self.argv[1]

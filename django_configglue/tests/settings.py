@@ -6,6 +6,9 @@ from django_configglue.utils import configglue
 from django_configglue.schema import schemas
 
 
-DjangoSchema = schemas.get(django.get_version())
-configglue(DjangoSchema, ['main.cfg', 'test.cfg'], __name__)
+DjangoSchema = schemas.get(django.get_version(), strict=False)
+main_cfg = 'main.cfg'
+if DjangoSchema.version >= '1.2':
+    main_cfg = 'main-12.cfg'
+configglue(DjangoSchema, [main_cfg, 'test.cfg'], __name__)
 

@@ -11,10 +11,8 @@ def runtests():
 
     os.environ['DJANGO_SETTINGS_MODULE'] = 'testproject.settings'
 
-    from django.conf import settings
-    from django.test.utils import get_runner
+    from django.core.management import call_command
 
-    test_runner = get_runner(settings)
-    failures = test_runner(['django_configglue'], verbosity=1, interactive=True)
-    sys.exit(failures)
+    call_command('test', 'django_configglue')
+    sys.exit(0)
 

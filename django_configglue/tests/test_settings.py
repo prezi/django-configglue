@@ -36,8 +36,11 @@ class SettingsCommandTestCase(ConfigGlueDjangoCommandTestCase):
             "SETTINGS_MODULE = 'django_configglue.tests.settings'",
             "SETTINGS_ENCODING = '%s'" % SETTINGS_ENCODING,
         ]
-        if django.VERSION[:2] >= (1, 1):
+        django_version = django.VERSION[:2]
+        if django_version == (1, 1):
             expected_values.append("DATABASE_SUPPORTS_TRANSACTIONS = True")
+        if django_version >= (1, 1):
+            expected_values.append("JING_PATH = '/usr/bin/jing'")
         self.call_command(show_current=True)
         output_lines = self.capture['stdout'].strip().split('\n')
         self.assertEqual(set(expected_values), set(output_lines))
@@ -94,16 +97,15 @@ class SettingsCommandTestCase(ConfigGlueDjangoCommandTestCase):
             wrapped.__CONFIGGLUE_PARSER__ = old_CONFIGGLUE_PARSER
 
     def test_wrapped_settings(self):
-        old_VERSION = django.VERSION
+        # the settings object has a _target attribute
+        # this is true for versions of django <= 1.0.2
+        expected = '_target'
+        if django.VERSION[:3] > (1, 0, 2):
+            # the settings object has a _wrapped attribute
+            # this is true for versions of django > 1.0.2
+            expected = '_wrapped'
 
-        try:
-            django.VERSION = (1, 0, 2)
-            self.assertEqual(self.wrapped_settings, '_target')
-
-            django.VERSION = (1, 1, 2)
-            self.assertEqual(self.wrapped_settings, '_wrapped')
-        finally:
-            django.VERSION = old_VERSION
+        self.assertEqual(self.wrapped_settings, expected)
 
 
 class ValidateCommandTestCase(ConfigGlueDjangoCommandTestCase):

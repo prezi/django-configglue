@@ -106,7 +106,7 @@ class Command(BaseCommand):
         else:
             # looking in django settings
             for key in map(str.upper, keys):
-                if key in settings.get_all_members():
+                if key in dir(settings):
                     msg = "setting %s last defined in %r"
                     output.append(msg % (key, os.path.realpath(location)))
                 else:
