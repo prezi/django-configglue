@@ -933,7 +933,7 @@ class Django13Schema(Django125Schema):
                                 item=StringConfigOption(),
                                 default=['mail_admins']),
                             'level': StringConfigOption(default='ERROR'),
-                            'propagate': BoolConfigOption(default=False),
+                            'propagate': BoolConfigOption(default=True),
                         }),
                 }),
         },
