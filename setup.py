@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 setup(
     # metadata
     name='django-configglue',
-    version='0.3.1',
+    version='0.4',
     author='Canonical ISD Hackers',
     author_email='canonical-isd@lists.launchpad.net',
     description='Django commands for managing configglue generated settings',
