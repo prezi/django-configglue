@@ -4,6 +4,8 @@ django-configglue (0.4-0ubuntu1) maverick; urgency=low
   * allow falling back to other schema when requested
   * simplified common use case
 
+ -- Ricardo Kirkner <ricardo.kirkner@canonical.com>  Mon, 02 May 2011 10:04:19 -0300
+
 django-configglue (0.3.1-0ubuntu1) maverick; urgency=low
 
   * Updated code for compatibility with latest configglue (0.9.1)
