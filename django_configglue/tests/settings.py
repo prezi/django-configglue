@@ -7,8 +7,12 @@ from django_configglue.schema import schemas
 
 
 DjangoSchema = schemas.get(django.get_version(), strict=False)
-main_cfg = 'main.cfg'
-if DjangoSchema.version >= '1.2':
-    main_cfg = 'main-12.cfg'
-configglue(DjangoSchema, [main_cfg, 'test.cfg'], __name__)
 
+version = DjangoSchema.version
+main_cfg = 'main.cfg'
+if version >= '1.3':
+    main_cfg = 'main-13.cfg'
+elif version >= '1.2':
+    main_cfg = 'main-12.cfg'
+
+configglue(DjangoSchema, [main_cfg, 'test.cfg'], __name__)
