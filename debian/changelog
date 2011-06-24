@@ -1,3 +1,10 @@
+django-configglue (0.5-0ubuntu1) natty; urgency=low
+
+  * changes to schema declarative syntax using attributes for inner classes to improve readability
+  * Track option and section class name rename occurring in configglue 0.11
+
+ -- Ricardo Kirkner <ricardo.kirkner@canonical.com>  Fri, 24 Jun 2011 15:11:53 -0300
+
 django-configglue (0.4-0ubuntu1) maverick; urgency=low
 
   * use tox to test all major django versions (up to django 1.3)
