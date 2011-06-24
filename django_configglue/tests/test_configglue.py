@@ -8,10 +8,10 @@ from unittest import TestCase
 
 import django
 from configglue.pyschema.schema import (
-    DictConfigOption,
-    IntConfigOption,
+    DictOption,
+    IntOption,
     Schema,
-    StringConfigOption,
+    StringOption,
 )
 from configglue.pyschema.parser import (
     CONFIG_FILE_ENCODING,
@@ -30,7 +30,7 @@ from django_configglue.utils import (
 from django_configglue.schema import (
     BaseDjangoSchema,
     DjangoSchemaFactory,
-    UpperCaseDictConfigOption,
+    UpperCaseDictOption,
     schemas,
 )
 from django_configglue.tests.helpers import ConfigGlueDjangoCommandTestCase
@@ -39,10 +39,10 @@ from django_configglue.tests.helpers import ConfigGlueDjangoCommandTestCase
 class DjangoSupportTestCase(TestCase):
     def test_get_django_settings(self):
         class MySchema(Schema):
-            foo = IntConfigOption()
-            bar = DictConfigOption(
-                spec={'baz': IntConfigOption(),
-                      'BAZ': IntConfigOption()})
+            foo = IntOption()
+            bar = DictOption(
+                spec={'baz': IntOption(),
+                      'BAZ': IntOption()})
 
         expected = {'FOO': 0, 'BAR': {'baz': 0, 'BAZ': 0}}
 
@@ -52,7 +52,7 @@ class DjangoSupportTestCase(TestCase):
 
     def test_get_django_settings_encoding(self):
         class MySchema(Schema):
-            foo = StringConfigOption()
+            foo = StringOption()
 
         expected = {'FOO': u'€'.encode(SETTINGS_ENCODING)}
 
@@ -65,7 +65,7 @@ class DjangoSupportTestCase(TestCase):
 
     def test_update_settings(self):
         class MySchema(Schema):
-            foo = IntConfigOption()
+            foo = IntOption()
 
         env = {}
         parser = SchemaConfigParser(MySchema())
@@ -249,10 +249,10 @@ class GlueManagementUtilityTestCase(ConfigGlueDjangoCommandTestCase):
         self.assertTrue('Show settings attributes' in self.capture['stdout'])
 
 
-class UpperCaseDictConfigOptionTestCase(TestCase):
+class UpperCaseDictOptionTestCase(TestCase):
     def test_parse(self):
         class MySchema(Schema):
-            foo = UpperCaseDictConfigOption()
+            foo = UpperCaseDictOption()
         config = StringIO(textwrap.dedent("""
             [__main__]
             foo = mydict

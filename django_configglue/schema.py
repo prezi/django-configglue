@@ -4,14 +4,14 @@ import logging
 from copy import deepcopy
 
 from configglue.pyschema.schema import (
-    BoolConfigOption,
-    ConfigSection,
-    DictConfigOption,
-    IntConfigOption,
-    LinesConfigOption,
+    BoolOption,
+    Section,
+    DictOption,
+    IntOption,
+    ListOption,
     Schema,
-    StringConfigOption,
-    TupleConfigOption,
+    StringOption,
+    TupleOption,
 )
 from django import get_version
 
@@ -22,10 +22,10 @@ from django import get_version
 gettext_noop = lambda s: s
 
 
-class UpperCaseDictConfigOption(DictConfigOption):
-    """ A DictConfigOption with all upper-case keys. """
+class UpperCaseDictOption(DictOption):
+    """ A DictOption with all upper-case keys. """
     def parse(self, section, parser=None, raw=False):
-        parsed = super(UpperCaseDictConfigOption, self).parse(
+        parsed = super(UpperCaseDictOption, self).parse(
             section, parser, raw)
         result = {}
         for k, v in parsed.items():
@@ -37,41 +37,41 @@ class BaseDjangoSchema(Schema):
     version = '1.0.2 final'
 
     # Sections
-    django = ConfigSection('django')
+    django = Section('django')
 
     ################
     # CORE         #
     ################
 
-    django.debug = BoolConfigOption(default=True)
-    django.template_debug = BoolConfigOption(default=True)
-    django.debug_propagate_exceptions = BoolConfigOption(default=False,
+    django.debug = BoolOption(default=True)
+    django.template_debug = BoolOption(default=True)
+    django.debug_propagate_exceptions = BoolOption(default=False,
         help="Whether the framework should propagate raw exceptions rather "
              "than catching them. This is useful under some testing "
              "situations and should never be used on a live site.")
 
-    django.use_etags = BoolConfigOption(default=False,
+    django.use_etags = BoolOption(default=False,
         help="Whether to use the 'Etag' header. This saves bandwidth but "
              "slows down performance.")
 
-    django.admins = LinesConfigOption(item=TupleConfigOption(2), default=[],
+    django.admins = ListOption(item=TupleOption(2), default=[],
         help="People who get code error notifications. In the format "
              "(('Full Name', 'email@domain.com'), "
              "('Full Name', 'anotheremail@domain.com'))")
 
-    django.internal_ips = TupleConfigOption(default=(),
+    django.internal_ips = TupleOption(default=(),
         help="Tuple of IP addresses, as strings, that see debug comments, "
              "when DEBUG is true and receive x-headers")
 
-    django.time_zone = StringConfigOption(default='America/Chicago',
+    django.time_zone = StringOption(default='America/Chicago',
         help="Local time zone for this installation. All choices can be found "
              "here: http://en.wikipedia.org/wiki/List_of_tz_zones_by_name "
              "(although not all systems may support all possibilities)")
-    django.language_code = StringConfigOption(default='en-us',
+    django.language_code = StringOption(default='en-us',
         help="Language code for this installation. All choices can be found "
              "here: http://www.i18nguy.com/unicode/language-identifiers.html")
-    django.languages = LinesConfigOption(
-        item=TupleConfigOption(length=2),
+    django.languages = ListOption(
+        item=TupleOption(length=2),
         default=[('ar', gettext_noop('Arabic')),
                  ('bn', gettext_noop('Bengali')),
                  ('bg', gettext_noop('Bulgarian')),
@@ -127,83 +127,83 @@ class BaseDjangoSchema(Schema):
              "The language name should be the utf-8 encoded local name "
              "for the language")
 
-    django.languages_bidi = TupleConfigOption(default=('he', 'ar', 'fa'),
+    django.languages_bidi = TupleOption(default=('he', 'ar', 'fa'),
         help="Languages using BiDi (right-to-left) layout")
 
-    django.use_i18n = BoolConfigOption(default=True,
+    django.use_i18n = BoolOption(default=True,
         help="If you set this to False, Django will make some optimizations "
              "so as not to load the internationalization machinery")
 
-    django.locale_paths = LinesConfigOption(item=StringConfigOption())
-    django.language_cookie_name = StringConfigOption(default='django_language')
+    django.locale_paths = ListOption(item=StringOption())
+    django.language_cookie_name = StringOption(default='django_language')
 
-    django.managers = LinesConfigOption(item=TupleConfigOption(2), default=[],
+    django.managers = ListOption(item=TupleOption(2), default=[],
         help="Not-necessarily-technical managers of the site. They get broken "
              "link notifications and other various e-mails")
 
-    django.default_content_type = StringConfigOption(default='text/html',
+    django.default_content_type = StringOption(default='text/html',
         help="Default content type and charset to use for all HttpResponse "
              "objects, if a MIME type isn't manually specified. These are "
              "used to construct the Content-Type header")
-    django.default_charset = StringConfigOption(default='utf-8')
+    django.default_charset = StringOption(default='utf-8')
 
-    django.file_charset = StringConfigOption(default='utf-8',
+    django.file_charset = StringOption(default='utf-8',
         help="Encoding of files read from disk (template and initial "
              "SQL files)")
 
-    django.server_email = StringConfigOption(
+    django.server_email = StringOption(
         help="E-mail address that error messages come from",
         default='root@localhost')
 
-    django.send_broken_link_emails = BoolConfigOption(default=False,
+    django.send_broken_link_emails = BoolOption(default=False,
         help="Whether to send broken-link e-mails")
 
-    django.database_engine = StringConfigOption(default='',
+    django.database_engine = StringOption(default='',
         help="'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3'"
              " or 'oracle'")
-    django.database_name = StringConfigOption(default='',
+    django.database_name = StringOption(default='',
         help="Or path to database file if using sqlite3")
-    django.database_user = StringConfigOption(default='',
+    django.database_user = StringOption(default='',
         help="Not used with sqlite3")
-    django.database_password= StringConfigOption(default='',
+    django.database_password= StringOption(default='',
         help="Not used with sqlite3")
-    django.database_host = StringConfigOption(default='',
+    django.database_host = StringOption(default='',
         help="Set to empty string for localhost. Not used with sqlite3")
-    django.database_port = StringConfigOption(default='',
+    django.database_port = StringOption(default='',
         help="Set to empty string for default. Not used with sqlite3")
-    django.database_options = DictConfigOption(
+    django.database_options = DictOption(
         help="Set to empty dictionary for default")
 
-    django.email_host = StringConfigOption(default='localhost',
+    django.email_host = StringOption(default='localhost',
         help="Host for sending e-mail")
-    django.email_port = IntConfigOption(default=25,
+    django.email_port = IntOption(default=25,
         help="Port for sending e-mail")
 
-    django.email_host_user = StringConfigOption(default='',
+    django.email_host_user = StringOption(default='',
         help="Optional SMTP authentication information for EMAIL_HOST")
-    django.email_host_password = StringConfigOption(default='',
+    django.email_host_password = StringOption(default='',
         help="Optional SMTP authentication information for EMAIL_HOST")
-    django.email_use_tls = BoolConfigOption(default=False,
+    django.email_use_tls = BoolOption(default=False,
         help="Optional SMTP authentication information for EMAIL_HOST")
 
-    django.installed_apps = LinesConfigOption(item=StringConfigOption(),
+    django.installed_apps = ListOption(item=StringOption(),
         default=['django.contrib.auth',
                  'django.contrib.contenttypes',
                  'django.contrib.sessions',
                  'django.contrib.sites'],
         help="List of strings representing installed apps")
 
-    django.template_dirs = LinesConfigOption(item=StringConfigOption(),
+    django.template_dirs = ListOption(item=StringOption(),
         help="List of locations of the template source files, in search order")
 
-    django.template_loaders = LinesConfigOption(item=StringConfigOption(),
+    django.template_loaders = ListOption(item=StringOption(),
         default=['django.template.loaders.filesystem.load_template_source',
                  'django.template.loaders.app_directories.load_template_source'],
         help="List of callables that know how to import templates from "
              "various sources")
 
-    django.template_context_processors = LinesConfigOption(
-        item=StringConfigOption(),
+    django.template_context_processors = ListOption(
+        item=StringOption(),
         default=['django.core.context_processors.auth',
                  'django.core.context_processors.debug',
                  'django.core.context_processors.i18n',
@@ -213,132 +213,132 @@ class BaseDjangoSchema(Schema):
              "object as its only parameter and returns a dictionary to add to "
              "the context")
 
-    django.template_string_if_invalid = StringConfigOption(default='',
+    django.template_string_if_invalid = StringOption(default='',
         help="Output to use in template system for invalid "
              "(e.g. misspelled) variables")
 
-    django.admin_media_prefix = StringConfigOption(default='/media/',
+    django.admin_media_prefix = StringOption(default='/media/',
         help="URL prefix for admin media -- CSS, JavaScript and images. "
              "Make sure to use a trailing slash. "
              "Examples: 'http://foo.com/media/', '/media/'")
 
-    django.default_from_email = StringConfigOption(
+    django.default_from_email = StringOption(
         default='webmaster@localhost',
         help="Default e-mail address to use for various automated "
              "correspondence from the site managers")
-    django.email_subject_prefix = StringConfigOption(default='[Django] ',
+    django.email_subject_prefix = StringOption(default='[Django] ',
         help="Subject-line prefix for email messages send with "
              "django.core.mail.mail_admins or ...mail_managers. Make sure to "
              "include the trailing space")
 
-    django.append_slash = BoolConfigOption(default=True,
+    django.append_slash = BoolOption(default=True,
         help="Whether to append trailing slashes to URLs")
-    django.prepend_www = BoolConfigOption(default=False,
+    django.prepend_www = BoolOption(default=False,
         help="Whether to prepend the 'www.' subdomain to URLs that "
              "don't have it")
-    django.force_script_name = StringConfigOption(null=True,
+    django.force_script_name = StringOption(null=True,
         help="Override the server-derived value of SCRIPT_NAME")
 
-    django.disallowed_user_agents = LinesConfigOption(
-        item=StringConfigOption(),
+    django.disallowed_user_agents = ListOption(
+        item=StringOption(),
         default=[],
         help="List of compiled regular expression objects representing "
              "User-Agent strings that are not allowed to visit any page, "
              "systemwide. Use this for bad robots/crawlers")
 
-    django.absolute_url_overrides = DictConfigOption()
+    django.absolute_url_overrides = DictOption()
 
-    django.allowed_include_roots = TupleConfigOption(
+    django.allowed_include_roots = TupleOption(
         help="Tuple of strings representing allowed prefixes for the "
              "{% ssi %} tag")
 
-    django.admin_for = LinesConfigOption(item=StringConfigOption(),
+    django.admin_for = ListOption(item=StringOption(),
         help="If this is a admin settings module, this should be a list of "
              "settings modules (in the format 'foo.bar.baz') for which this "
              "admin is an admin")
 
-    django.ignorable_404_starts = LinesConfigOption(item=StringConfigOption(),
+    django.ignorable_404_starts = ListOption(item=StringOption(),
         default=['/cgi-bin/', '/_vti_bin', '/_vti_inf'],
         help="404s that may be ignored")
-    django.ignorable_404_ends = LinesConfigOption(item=StringConfigOption(),
+    django.ignorable_404_ends = ListOption(item=StringOption(),
         default=['mail.pl', 'mailform.pl', 'mail.cgi', 'mailform.cgi',
                  'favicon.ico', '.php'])
 
-    django.secret_key = StringConfigOption(raw=True, default='',
+    django.secret_key = StringOption(raw=True, default='',
         help="A secret key for this particular Django installation. Used in "
              "secret-key hashing algorithms. Set this in your settings, or "
              "Django will complain loudly")
 
-    django.jing_path = StringConfigOption(default='/usr/bin/jing',
+    django.jing_path = StringOption(default='/usr/bin/jing',
         help="Path to the 'jing' executable -- needed to validate XMLFields")
 
-    django.default_file_storage = StringConfigOption(
+    django.default_file_storage = StringOption(
         default='django.core.files.storage.FileSystemStorage',
         help="Default file storage mechanism that holds media")
 
-    django.media_root = StringConfigOption(default='',
+    django.media_root = StringOption(default='',
         help="Absolute path to the directory that holds media")
 
-    django.media_url = StringConfigOption(default='',
+    django.media_url = StringOption(default='',
         help="URL that handles the media served from MEDIA_ROOT")
 
-    django.file_upload_handlers = LinesConfigOption(item=StringConfigOption(),
+    django.file_upload_handlers = ListOption(item=StringOption(),
         default=['django.core.files.uploadhandler.MemoryFileUploadHandler',
                  'django.core.files.uploadhandler.TemporaryFileUploadHandler'],
         help="List of upload handler classes to be applied in order")
 
-    django.file_upload_max_memory_size = IntConfigOption(default=2621440,
+    django.file_upload_max_memory_size = IntOption(default=2621440,
         help="Maximum size, in bytes, of a request before it will be streamed "
              "to the file system instead of into memory")
 
-    django.file_upload_temp_dir = StringConfigOption(null=True,
+    django.file_upload_temp_dir = StringOption(null=True,
         help="Directory in which upload streamed files will be temporarily "
              "saved. A value of `None` will make Django use the operating "
              "system's default temporary directory (i.e. '/tmp' on *nix "
              "systems)")
 
-    django.file_upload_permissions = StringConfigOption(null=True,
+    django.file_upload_permissions = StringOption(null=True,
         help="The numeric mode to set newly-uploaded files to. The value "
              "should be a mode you'd pass directly to os.chmod; "
              "see http://docs.python.org/lib/os-file-dir.html")
 
-    django.date_format = StringConfigOption(default='N j, Y',
+    django.date_format = StringOption(default='N j, Y',
         help="Default formatting for date objects. See all available format "
              "strings here: "
              "http://docs.djangoproject.com/en/dev/ref/templates/builtins/#now")
 
-    django.datetime_format = StringConfigOption(default='N j, Y, P',
+    django.datetime_format = StringOption(default='N j, Y, P',
         help="Default formatting for datetime objects. See all available "
              "format strings here: "
              "http://docs.djangoproject.com/en/dev/ref/templates/builtins/#now")
 
-    django.time_format = StringConfigOption(default='P',
+    django.time_format = StringOption(default='P',
         help="Default formatting for time objects. See all available format "
              "strings here: "
              "http://docs.djangoproject.com/en/dev/ref/templates/builtins/#now")
 
-    django.year_month_format = StringConfigOption(default='F Y',
+    django.year_month_format = StringOption(default='F Y',
         help="Default formatting for date objects when only the year and "
              "month are relevant. See all available format strings here: "
              "http://docs.djangoproject.com/en/dev/ref/templates/builtins/#now")
 
-    django.month_day_format = StringConfigOption(default='F j',
+    django.month_day_format = StringOption(default='F j',
         help="Default formatting for date objects when only the month and "
              "day are relevant. See all available format strings here: "
              "http://docs.djangoproject.com/en/dev/ref/templates/builtins/#now")
 
-    django.transactions_managed = BoolConfigOption(default=False,
+    django.transactions_managed = BoolOption(default=False,
         help="Do you want to manage transactions manually? "
              "Hint: you really don't!")
 
-    django.url_validator_user_agent = StringConfigOption(
+    django.url_validator_user_agent = StringOption(
         default="Django/%s (http://www.djangoproject.com)" % get_version(),
         help="The User-Agent string to use when checking for URL validity "
              "through the isExistingURL validator")
-    django.default_tablespace = StringConfigOption(default='',
+    django.default_tablespace = StringOption(default='',
         help="The tablespaces to use for each model when not "
              "specified otherwise")
-    django.default_index_tablespace = StringConfigOption(default='',
+    django.default_index_tablespace = StringOption(default='',
         help="The tablespaces to use for each model when not "
              "specified otherwise")
 
@@ -346,7 +346,7 @@ class BaseDjangoSchema(Schema):
     # MIDDLEWARE #
     ##############
 
-    django.middleware_classes = LinesConfigOption(item=StringConfigOption(),
+    django.middleware_classes = ListOption(item=StringOption(),
         default=['django.middleware.common.CommonMiddleware',
                  'django.contrib.sessions.middleware.SessionMiddleware',
                  'django.contrib.auth.middleware.AuthenticationMiddleware'],
@@ -359,26 +359,26 @@ class BaseDjangoSchema(Schema):
     # SESSIONS #
     ############
 
-    django.session_cookie_name = StringConfigOption(default='sessionid',
+    django.session_cookie_name = StringOption(default='sessionid',
         help="Cookie name")
-    django.session_cookie_age = IntConfigOption(default=60*60*24*7*2,
+    django.session_cookie_age = IntOption(default=60*60*24*7*2,
         help="Age of cookie, in seconds (default: 2 weeks)")
-    django.session_cookie_domain = StringConfigOption(null=True,
+    django.session_cookie_domain = StringOption(null=True,
         help="A string like '.lawrence.com', or None for standard "
              "domain cookie")
-    django.session_cookie_secure = BoolConfigOption(default=False, 
+    django.session_cookie_secure = BoolOption(default=False, 
         help="Wether the session cookie should be secure (https:// only)")
-    django.session_cookie_path = StringConfigOption(default='/',
+    django.session_cookie_path = StringOption(default='/',
         help="The path of the sesion cookie")
-    django.session_save_every_request = BoolConfigOption(default=False,
+    django.session_save_every_request = BoolOption(default=False,
         help="Whether to save the session data on every request")
-    django.session_expire_at_browser_close = BoolConfigOption(default=False,
+    django.session_expire_at_browser_close = BoolOption(default=False,
         help="Whether a user's session cookie expires when the Web browser "
              "is closed")
-    django.session_engine = StringConfigOption(
+    django.session_engine = StringOption(
         default='django.contrib.sessions.backends.db',
         help="The module to store session data")
-    django.session_file_path = StringConfigOption(null=True,
+    django.session_file_path = StringOption(null=True,
         help="Directory to store session files if using the file session "
              "module. If None, the backend will use a sensible default")
 
@@ -386,36 +386,36 @@ class BaseDjangoSchema(Schema):
     # CACHE #
     #########
 
-    django.cache_backend = StringConfigOption(default='locmem://',
+    django.cache_backend = StringOption(default='locmem://',
         help="The cache backend to use. See the docstring in "
              "django.core.cache for the possible values")
-    django.cache_middleware_key_prefix = StringConfigOption(default='')
-    django.cache_middleware_seconds = IntConfigOption(default=600)
+    django.cache_middleware_key_prefix = StringOption(default='')
+    django.cache_middleware_seconds = IntOption(default=600)
 
     ####################
     # COMMENTS         #
     ####################
 
-    django.comments_allow_profanities = BoolConfigOption(default=False)
-    django.profanities_list = LinesConfigOption(item=StringConfigOption(),
+    django.comments_allow_profanities = BoolOption(default=False)
+    django.profanities_list = ListOption(item=StringOption(),
         default=['asshat', 'asshead', 'asshole', 'cunt', 'fuck', 'gook',
                  'nigger', 'shit'],
         help="The profanities that will trigger a validation error in the "
              "'hasNoProfanities' validator. All of these should be in "
              "lowercase")
-    django.comments_banned_users_group = StringConfigOption(null=True,
+    django.comments_banned_users_group = StringOption(null=True,
         help="The group ID that designates which users are banned. "
              "Set to None if you're not using it")
-    django.comments_moderators_group = StringConfigOption(null=True,
+    django.comments_moderators_group = StringOption(null=True,
         help="The group ID that designates which users can moderate comments. "
              "Set to None if you're not using it")
-    django.comments_sketchy_users_group = StringConfigOption(null=True,
+    django.comments_sketchy_users_group = StringOption(null=True,
         help="The group ID that designates the users whose comments should be "
              "e-mailed to MANAGERS. Set to None if you're not using it")
-    django.comments_first_few = IntConfigOption(default=0,
+    django.comments_first_few = IntOption(default=0,
         help="The system will e-mail MANAGERS the first COMMENTS_FIRST_FEW "
              "comments by each user. Set this to 0 if you want to disable it")
-    django.banned_ips = TupleConfigOption(
+    django.banned_ips = TupleOption(
         help="A tuple of IP addresses that have been banned from "
              "participating in various Django-powered features")
 
@@ -423,31 +423,31 @@ class BaseDjangoSchema(Schema):
     # AUTHENTICATION #
     ##################
 
-    django.authentication_backends = LinesConfigOption(
-        item=StringConfigOption(),
+    django.authentication_backends = ListOption(
+        item=StringOption(),
         default=['django.contrib.auth.backends.ModelBackend'])
-    django.login_url = StringConfigOption(default='/accounts/login/')
-    django.logout_url = StringConfigOption(default='/accounts/logout/')
-    django.login_redirect_url = StringConfigOption(default='/accounts/profile/')
-    django.password_reset_timeout_days = IntConfigOption(default=3,
+    django.login_url = StringOption(default='/accounts/login/')
+    django.logout_url = StringOption(default='/accounts/logout/')
+    django.login_redirect_url = StringOption(default='/accounts/profile/')
+    django.password_reset_timeout_days = IntOption(default=3,
         help="The number of days a password reset link is valid for")
 
     ###########
     # TESTING #
     ###########
 
-    django.test_runner = StringConfigOption(
+    django.test_runner = StringOption(
         default='django.test.simple.run_tests',
         help="The name of the method to use to invoke the test suite")
-    django.test_database_name = StringConfigOption(null=True,
+    django.test_database_name = StringOption(null=True,
         help="The name of the database to use for testing purposes. "
              "If None, a name of 'test_' + DATABASE_NAME will be assumed")
-    django.test_database_charset = StringConfigOption(null=True,
+    django.test_database_charset = StringOption(null=True,
         help="Strings used to set the character set and collation order for "
              "the test database. These values are passed literally to the "
              "server, so they are backend-dependent. If None, no special "
              "settings are sent (system defaults are used)")
-    django.test_database_collation = StringConfigOption(null=True,
+    django.test_database_collation = StringOption(null=True,
         help="Strings used to set the character set and collation order for "
              "the test database. These values are passed literally to the "
              "server, so they are backend-dependent. If None, no special "
@@ -457,15 +457,15 @@ class BaseDjangoSchema(Schema):
     # FIXTURES #
     ############
 
-    django.fixture_dirs = LinesConfigOption(item=StringConfigOption(),
+    django.fixture_dirs = ListOption(item=StringOption(),
         help="The list of directories to search for fixtures")
 
     ####################
     # PROJECT TEMPLATE #
     ####################
 
-    django.site_id = IntConfigOption(default=1)
-    django.root_urlconf = StringConfigOption(default='urls')
+    django.site_id = IntOption(default=1)
+    django.root_urlconf = StringOption(default='urls')
 
 
 class Django112Schema(BaseDjangoSchema):
@@ -479,7 +479,7 @@ class Django112Schema(BaseDjangoSchema):
     ################
 
     # update default value
-    django.languages.default = (
+    django.languages.default = [
         ('ar', gettext_noop('Arabic')),
         ('bg', gettext_noop('Bulgarian')),
         ('bn', gettext_noop('Bengali')),
@@ -535,7 +535,7 @@ class Django112Schema(BaseDjangoSchema):
         ('uk', gettext_noop('Ukrainian')),
         ('zh-cn', gettext_noop('Simplified Chinese')),
         ('zh-tw', gettext_noop('Traditional Chinese')),
-    )
+    ]
 
 
 class Django125Schema(Django112Schema):
@@ -614,19 +614,19 @@ class Django125Schema(Django112Schema):
         ('zh-tw', gettext_noop('Traditional Chinese')),
     ]
 
-    django.use_l10n = BoolConfigOption(
+    django.use_l10n = BoolOption(
         default=True,
         help="If you set this to False, Django will not format dates, "
             "numbers and calendars according to the current locale")
 
-    django.databases = DictConfigOption(
-        item=UpperCaseDictConfigOption(spec={
-            'engine': StringConfigOption(default='django.db.backends.'),
-            'name': StringConfigOption(),
-            'user': StringConfigOption(),
-            'password': StringConfigOption(),
-            'host': StringConfigOption(),
-            'port': StringConfigOption(),
+    django.databases = DictOption(
+        item=UpperCaseDictOption(spec={
+            'engine': StringOption(default='django.db.backends.'),
+            'name': StringOption(),
+            'user': StringOption(),
+            'password': StringOption(),
+            'host': StringOption(),
+            'port': StringOption(),
         }),
         default={
             'default': {
@@ -638,11 +638,11 @@ class Django125Schema(Django112Schema):
                 'port': '',
             }
         })
-    django.database_routers = LinesConfigOption(
-        item=StringConfigOption(),
+    django.database_routers = ListOption(
+        item=StringOption(),
         help="Classes used to implement db routing behaviour")
 
-    django.email_backend = StringConfigOption(
+    django.email_backend = StringOption(
         default='django.core.mail.backends.smtp.EmailBackend',
         help="The email backend to use. For possible shortcuts see "
             "django.core.mail. The default is to use the SMTP backend. "
@@ -670,20 +670,20 @@ class Django125Schema(Django112Schema):
         'django.contrib.messages.context_processors.messages',
     ]
 
-    django.format_module_path = StringConfigOption(
+    django.format_module_path = StringOption(
         null=True, default=None,
         help="Python module path where user will place custom format "
             "definition. The directory where this setting is pointing "
             "should contain subdirectories named as the locales, "
             "containing a formats.py file")
-    django.short_date_format = StringConfigOption(
+    django.short_date_format = StringOption(
         default='m/d/Y',
         help="Default short formatting for date objects")
-    django.short_datetime_format = StringConfigOption(
+    django.short_datetime_format = StringOption(
         default='m/d/Y P',
         help="Default short formatting for datetime objects")
-    django.date_input_formats = LinesConfigOption(
-        item=StringConfigOption(),
+    django.date_input_formats = ListOption(
+        item=StringOption(),
         default=[
             '%%Y-%%m-%%d', '%%m/%%d/%%Y', '%%m/%%d/%%y', # '2006-10-25', '10/25/2006', '10/25/06'
             '%%b %%d %%Y', '%%b %%d, %%Y',               # 'Oct 25 2006', 'Oct 25, 2006'
@@ -693,16 +693,16 @@ class Django125Schema(Django112Schema):
         ],
         help="Default formats to be used when parsing dates from input "
             "boxes, in order")
-    django.time_input_formats = LinesConfigOption(
-        item=StringConfigOption(),
+    django.time_input_formats = ListOption(
+        item=StringOption(),
         default=[
             '%%H:%%M:%%S',     # '14:30:59'
             '%%H:%%M',         # '14:30'
         ],
         help="Default formats to be used when parsing times from input "
             "boxes, in order")
-    django.datetime_input_formats = LinesConfigOption(
-        item=StringConfigOption(),
+    django.datetime_input_formats = ListOption(
+        item=StringOption(),
         default=[
             '%%Y-%%m-%%d %%H:%%M:%%S',     # '2006-10-25 14:30:59'
             '%%Y-%%m-%%d %%H:%%M',         # '2006-10-25 14:30'
@@ -717,23 +717,23 @@ class Django125Schema(Django112Schema):
         help="Default formats to be used when parsing dates and times "
             "from input boxes, in order")
 
-    django.first_day_of_week = IntConfigOption(
+    django.first_day_of_week = IntOption(
         default=0,
         help="First day of week, to be used on calendars. 0 means Sunday, "
             "1 means Monday...")
-    django.decimal_separator = StringConfigOption(
+    django.decimal_separator = StringOption(
         default='.',
         help="Decimal separator symbol")
-    django.use_thousand_separator = BoolConfigOption(
+    django.use_thousand_separator = BoolOption(
         default=False,
         help="Boolean that sets whether to add thousand separator when "
             "formatting numbers")
-    django.number_grouping = IntConfigOption(
+    django.number_grouping = IntOption(
         default=0,
         help="Number of digits that will be together, when splitting them "
             "by THOUSAND_SEPARATOR. 0 means no grouping, 3 means "
             "splitting by thousands...")
-    django.thousand_separator = StringConfigOption(
+    django.thousand_separator = StringOption(
         default=',',
         help="Thousand separator symbol")
 
@@ -753,14 +753,14 @@ class Django125Schema(Django112Schema):
     # CSRF #
     ########
 
-    django.csrf_failure_view = StringConfigOption(
+    django.csrf_failure_view = StringOption(
         default='django.views.csrf.csrf_failure',
         help="Dotted path to callable to be used as view when a request "
             "is rejected by the CSRF middleware")
-    django.csrf_cookie_name = StringConfigOption(
+    django.csrf_cookie_name = StringOption(
         default='csrftoken',
         help="Name for CSRF cookie")
-    django.csrf_cookie_domain = StringConfigOption(
+    django.csrf_cookie_domain = StringOption(
         null=True,
         help="Domain for CSRF cookie")
 
@@ -768,7 +768,7 @@ class Django125Schema(Django112Schema):
     # MESSAGES #
     ############
 
-    django.message_storage = StringConfigOption(
+    django.message_storage = StringOption(
         default='django.contrib.messages.storage.user_messages.'
             'LegacyFallbackStorage',
         help="Class to be used as messages backend")
@@ -873,11 +873,11 @@ class Django13Schema(Django125Schema):
         'django.contrib.messages.context_processors.messages',
     ]
 
-    django.static_root = StringConfigOption(
+    django.static_root = StringOption(
         default='',
         help='Absolute path to the directory that holds static files.')
 
-    django.static_url = StringConfigOption(
+    django.static_url = StringOption(
         null=True, default=None,
         help='URL that handles the static files served from STATIC_ROOT.')
 
@@ -885,7 +885,7 @@ class Django13Schema(Django125Schema):
     # SESSIONS #
     ############
 
-    django.session_cookie_httponly = BoolConfigOption(
+    django.session_cookie_httponly = BoolOption(
         default=False,
         help='Whether to use the non-RFC standard htt pOnly flag (IE, FF3+, others)')
 
@@ -896,44 +896,44 @@ class Django13Schema(Django125Schema):
     # remove obsoleted setting
     del django.cache_backend
 
-    django.caches = DictConfigOption()
-    django.cache_middleware_alias = StringConfigOption(default='default')
+    django.caches = DictOption()
+    django.cache_middleware_alias = StringOption(default='default')
 
     ############
     # COMMENTS #
     ############
 
-    django.profanities_list.default = ()
+    django.profanities_list.default = []
 
     ###########
     # LOGGING #
     ###########
 
-    django.logging_config = StringConfigOption(
+    django.logging_config = StringOption(
         default='django.utils.log.dictConfig',
         help='The callable to use to configure logging')
-    django.logging = DictConfigOption(
+    django.logging = DictOption(
         spec={
-            'version': IntConfigOption(default=1),
-            'disable_existing_loggers': BoolConfigOption(default=False),
-            'handlers': DictConfigOption(
+            'version': IntOption(default=1),
+            'disable_existing_loggers': BoolOption(default=False),
+            'handlers': DictOption(
                 spec={
-                    'mail_admins': DictConfigOption(
+                    'mail_admins': DictOption(
                         spec={
-                            'level': StringConfigOption(default='ERROR'),
-                            'class': StringConfigOption(
+                            'level': StringOption(default='ERROR'),
+                            'class': StringOption(
                                 default='django.utils.log.AdminEmailHandler'),
                         }),
                 }),
-            'loggers': DictConfigOption(
+            'loggers': DictOption(
                 spec={
-                    'django.request': DictConfigOption(
+                    'django.request': DictOption(
                         spec={
-                            'handlers': LinesConfigOption(
-                                item=StringConfigOption(),
+                            'handlers': ListOption(
+                                item=StringOption(),
                                 default=['mail_admins']),
-                            'level': StringConfigOption(default='ERROR'),
-                            'propagate': BoolConfigOption(default=True),
+                            'level': StringOption(default='ERROR'),
+                            'propagate': BoolOption(default=True),
                         }),
                 }),
         },
@@ -945,14 +945,14 @@ class Django13Schema(Django125Schema):
     # STATICFILES #
     ###############
 
-    django.staticfiles_dirs = LinesConfigOption(
-        item=StringConfigOption(),
+    django.staticfiles_dirs = ListOption(
+        item=StringOption(),
         help='A list of locations of additional static files')
-    django.staticfiles_storage = StringConfigOption(
+    django.staticfiles_storage = StringOption(
         default='django.contrib.staticfiles.storage.StaticFilesStorage',
         help='The default file storage backend used during the build process')
-    django.staticfiles_finders = LinesConfigOption(
-        item=StringConfigOption(),
+    django.staticfiles_finders = ListOption(
+        item=StringOption(),
         default=[
             'django.contrib.staticfiles.finders.FileSystemFinder',
             'django.contrib.staticfiles.finders.AppDirectoriesFinder',
