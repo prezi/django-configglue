@@ -637,16 +637,7 @@ class Django125Schema(Django112Schema):
                 'host': StringOption(),
                 'port': StringOption(),
             }),
-            default={
-                'default': {
-                    'engine': 'django.db.backends.',
-                    'name': '',
-                    'user': '',
-                    'password': '',
-                    'host': '',
-                    'port': '',
-                }
-            })
+        )
         database_routers = ListOption(
             item=StringOption(),
             help="Classes used to implement db routing behaviour")
