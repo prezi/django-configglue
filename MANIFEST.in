@@ -1,4 +1,4 @@
-include LICENSE
+include *.py *.txt
 graft testproject
 graft third-party
 global-exclude *.pyc

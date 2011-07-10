@@ -20,7 +20,7 @@ from configglue.pyschema.parser import (
 from django.conf import settings
 from mock import patch
 
-from django_configglue import GlueManagementUtility
+from django_configglue.management import GlueManagementUtility
 from django_configglue.utils import (
     SETTINGS_ENCODING,
     configglue,

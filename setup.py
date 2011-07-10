@@ -3,12 +3,15 @@
 
 from setuptools import setup, find_packages
 
+from setup_helpers import get_version
+
+
 setup(
     # metadata
     name='django-configglue',
-    version='0.5',
-    author='Canonical ISD Hackers',
-    author_email='canonical-isd@lists.launchpad.net',
+    version=get_version('django_configglue/__init__.py'),
+    author='Ricardo Kirkner',
+    author_email='ricardo.kirkner@canonical.com',
     description='Django commands for managing configglue generated settings',
     long_description='Django commands for managing configglue generated '
         'settings from the command line.\n'
