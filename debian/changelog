@@ -1,9 +1,11 @@
 django-configglue (0.5-0ubuntu1) natty; urgency=low
 
+  * Bug (LP: #770093) automatic schema introspection if schema version not found
+  * added __version__ string support
   * changes to schema declarative syntax using attributes for inner classes to improve readability
   * Track option and section class name rename occurring in configglue 0.11
 
- -- Ricardo Kirkner <ricardo.kirkner@canonical.com>  Fri, 24 Jun 2011 15:11:53 -0300
+ -- Ricardo Kirkner <ricardo.kirkner@canonical.com>  Fri, 15 Jul 2011 19:43:57 -0300
 
 django-configglue (0.4-0ubuntu1) maverick; urgency=low
 
