@@ -22,7 +22,7 @@ class Command(BaseCommand):
         make_option('--validate', action='store_true', dest='validate',
             help='validate current settings'),
         )
-    help = ('Show settings attributes (value, location), or ' 
+    help = ('Show settings attributes (value, location), or '
             'validate current settings')
     args = '[setting ...]'
 
@@ -146,5 +146,3 @@ class Command(BaseCommand):
         configglue_parser = settings.__CONFIGGLUE_PARSER__
         op, options, args = schemaconfigglue(configglue_parser, op=parser)
         return op
-
-

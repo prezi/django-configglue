@@ -74,9 +74,9 @@ class BaseDjangoSchema(Schema):
         debug = BoolOption(default=True)
         template_debug = BoolOption(default=True)
         debug_propagate_exceptions = BoolOption(default=False,
-            help="Whether the framework should propagate raw exceptions rather "
-                 "than catching them. This is useful under some testing "
-                 "situations and should never be used on a live site.")
+            help="Whether the framework should propagate raw exceptions "
+                 "rather than catching them. This is useful under some "
+                 "testing situations and should never be used on a live site.")
 
         use_etags = BoolOption(default=False,
             help="Whether to use the 'Etag' header. This saves bandwidth but "
@@ -92,12 +92,14 @@ class BaseDjangoSchema(Schema):
                  "when DEBUG is true and receive x-headers")
 
         time_zone = StringOption(default='America/Chicago',
-            help="Local time zone for this installation. All choices can be found "
-                 "here: http://en.wikipedia.org/wiki/List_of_tz_zones_by_name "
+            help="Local time zone for this installation. All choices can be "
+                 "found here: "
+                 "http://en.wikipedia.org/wiki/List_of_tz_zones_by_name "
                  "(although not all systems may support all possibilities)")
         language_code = StringOption(default='en-us',
-            help="Language code for this installation. All choices can be found "
-                 "here: http://www.i18nguy.com/unicode/language-identifiers.html")
+            help="Language code for this installation. All choices can be "
+                 "found here: "
+                 "http://www.i18nguy.com/unicode/language-identifiers.html")
         languages = ListOption(
             item=TupleOption(length=2),
             default=[('ar', gettext_noop('Arabic')),
@@ -159,20 +161,22 @@ class BaseDjangoSchema(Schema):
             help="Languages using BiDi (right-to-left) layout")
 
         use_i18n = BoolOption(default=True,
-            help="If you set this to False, Django will make some optimizations "
-                 "so as not to load the internationalization machinery")
+            help="If you set this to False, Django will make some "
+                 "optimizations so as not to load the internationalization "
+                 "machinery")
 
         locale_paths = ListOption(item=StringOption())
         language_cookie_name = StringOption(default='django_language')
 
         managers = ListOption(item=TupleOption(length=2), default=[],
-            help="Not-necessarily-technical managers of the site. They get broken "
-                 "link notifications and other various e-mails")
+            help="Not-necessarily-technical managers of the site. They get "
+                 "broken link notifications and other various e-mails")
 
         default_content_type = StringOption(default='text/html',
-            help="Default content type and charset to use for all HttpResponse "
-                 "objects, if a MIME type isn't manually specified. These are "
-                 "used to construct the Content-Type header")
+            help="Default content type and charset to use for all "
+                 "HttpResponse objects, if a MIME type isn't manually "
+                 "specified. These are used to construct the Content-Type "
+                 "header")
         default_charset = StringOption(default='utf-8')
 
         file_charset = StringOption(default='utf-8',
@@ -193,7 +197,7 @@ class BaseDjangoSchema(Schema):
             help="Or path to database file if using sqlite3")
         database_user = StringOption(default='',
             help="Not used with sqlite3")
-        database_password= StringOption(default='',
+        database_password = StringOption(default='',
             help="Not used with sqlite3")
         database_host = StringOption(default='',
             help="Set to empty string for localhost. Not used with sqlite3")
@@ -222,11 +226,14 @@ class BaseDjangoSchema(Schema):
             help="List of strings representing installed apps")
 
         template_dirs = ListOption(item=StringOption(),
-            help="List of locations of the template source files, in search order")
+            help="List of locations of the template source files, in search "
+                 "order")
 
         template_loaders = ListOption(item=StringOption(),
-            default=['django.template.loaders.filesystem.load_template_source',
-                     'django.template.loaders.app_directories.load_template_source'],
+            default=[
+                'django.template.loaders.filesystem.load_template_source',
+                'django.template.loaders.app_directories.load_template_source',
+            ],
             help="List of callables that know how to import templates from "
                  "various sources")
 
@@ -237,9 +244,9 @@ class BaseDjangoSchema(Schema):
                      'django.core.context_processors.i18n',
                      'django.core.context_processors.media'],
             help="List of processors used by RequestContext to populate the "
-                 "context. Each one should be a callable that takes the request "
-                 "object as its only parameter and returns a dictionary to add to "
-                 "the context")
+                 "context. Each one should be a callable that takes the "
+                 "request object as its only parameter and returns a "
+                 "dictionary to add to the context")
 
         template_string_if_invalid = StringOption(default='',
             help="Output to use in template system for invalid "
@@ -256,8 +263,8 @@ class BaseDjangoSchema(Schema):
                  "correspondence from the site managers")
         email_subject_prefix = StringOption(default='[Django] ',
             help="Subject-line prefix for email messages send with "
-                 "django.core.mail.mail_admins or ...mail_managers. Make sure to "
-                 "include the trailing space")
+                 "django.core.mail.mail_admins or ...mail_managers. Make sure "
+                 "to include the trailing space")
 
         append_slash = BoolOption(default=True,
             help="Whether to append trailing slashes to URLs")
@@ -281,9 +288,9 @@ class BaseDjangoSchema(Schema):
                  "{% ssi %} tag")
 
         admin_for = ListOption(item=StringOption(),
-            help="If this is a admin settings module, this should be a list of "
-                 "settings modules (in the format 'foo.bar.baz') for which this "
-                 "admin is an admin")
+            help="If this is a admin settings module, this should be a list "
+                 "of settings modules (in the format 'foo.bar.baz') for which "
+                 "this admin is an admin")
 
         ignorable_404_starts = ListOption(item=StringOption(),
             default=['/cgi-bin/', '/_vti_bin', '/_vti_inf'],
@@ -293,12 +300,13 @@ class BaseDjangoSchema(Schema):
                      'favicon.ico', '.php'])
 
         secret_key = StringOption(raw=True, default='',
-            help="A secret key for this particular Django installation. Used in "
-                 "secret-key hashing algorithms. Set this in your settings, or "
-                 "Django will complain loudly")
+            help="A secret key for this particular Django installation. Used "
+                 "in secret-key hashing algorithms. Set this in your "
+                 "settings, or Django will complain loudly")
 
         jing_path = StringOption(default='/usr/bin/jing',
-            help="Path to the 'jing' executable -- needed to validate XMLFields")
+            help="Path to the 'jing' executable -- needed to validate "
+                 "XMLFields")
 
         default_file_storage = StringOption(
             default='django.core.files.storage.FileSystemStorage',
@@ -311,19 +319,20 @@ class BaseDjangoSchema(Schema):
             help="URL that handles the media served from MEDIA_ROOT")
 
         file_upload_handlers = ListOption(item=StringOption(),
-            default=['django.core.files.uploadhandler.MemoryFileUploadHandler',
-                     'django.core.files.uploadhandler.TemporaryFileUploadHandler'],
+            default=[
+                'django.core.files.uploadhandler.MemoryFileUploadHandler',
+                'django.core.files.uploadhandler.TemporaryFileUploadHandler'],
             help="List of upload handler classes to be applied in order")
 
         file_upload_max_memory_size = IntOption(default=2621440,
-            help="Maximum size, in bytes, of a request before it will be streamed "
-                 "to the file system instead of into memory")
+            help="Maximum size, in bytes, of a request before it will be "
+                 "streamed to the file system instead of into memory")
 
         file_upload_temp_dir = StringOption(null=True,
-            help="Directory in which upload streamed files will be temporarily "
-                 "saved. A value of `None` will make Django use the operating "
-                 "system's default temporary directory (i.e. '/tmp' on *nix "
-                 "systems)")
+            help="Directory in which upload streamed files will be "
+                 "temporarily saved. A value of `None` will make Django use "
+                 "the operating system's default temporary directory (i.e. "
+                 "'/tmp' on *nix systems)")
 
         file_upload_permissions = StringOption(null=True,
             help="The numeric mode to set newly-uploaded files to. The value "
@@ -331,29 +340,34 @@ class BaseDjangoSchema(Schema):
                  "see http://docs.python.org/lib/os-file-dir.html")
 
         date_format = StringOption(default='N j, Y',
-            help="Default formatting for date objects. See all available format "
-                 "strings here: "
-                 "http://docs.djangoproject.com/en/dev/ref/templates/builtins/#now")
+            help="Default formatting for date objects. See all available "
+                 "format strings here: "
+                 "http://docs.djangoproject.com/en/dev/ref/templates/builtins/"
+                 "#now")
 
         datetime_format = StringOption(default='N j, Y, P',
             help="Default formatting for datetime objects. See all available "
                  "format strings here: "
-                 "http://docs.djangoproject.com/en/dev/ref/templates/builtins/#now")
+                 "http://docs.djangoproject.com/en/dev/ref/templates/builtins/"
+                 "#now")
 
         time_format = StringOption(default='P',
-            help="Default formatting for time objects. See all available format "
-                 "strings here: "
-                 "http://docs.djangoproject.com/en/dev/ref/templates/builtins/#now")
+            help="Default formatting for time objects. See all available "
+                 "format strings here: "
+                 "http://docs.djangoproject.com/en/dev/ref/templates/builtins/"
+                 "#now")
 
         year_month_format = StringOption(default='F Y',
             help="Default formatting for date objects when only the year and "
                  "month are relevant. See all available format strings here: "
-                 "http://docs.djangoproject.com/en/dev/ref/templates/builtins/#now")
+                 "http://docs.djangoproject.com/en/dev/ref/templates/builtins/"
+                 "#now")
 
         month_day_format = StringOption(default='F j',
             help="Default formatting for date objects when only the month and "
                  "day are relevant. See all available format strings here: "
-                 "http://docs.djangoproject.com/en/dev/ref/templates/builtins/#now")
+                 "http://docs.djangoproject.com/en/dev/ref/templates/builtins/"
+                 "#now")
 
         transactions_managed = BoolOption(default=False,
             help="Do you want to manage transactions manually? "
@@ -375,13 +389,14 @@ class BaseDjangoSchema(Schema):
         ##############
 
         middleware_classes = ListOption(item=StringOption(),
-            default=['django.middleware.common.CommonMiddleware',
-                     'django.contrib.sessions.middleware.SessionMiddleware',
-                     'django.contrib.auth.middleware.AuthenticationMiddleware'],
-            help="List of middleware classes to use. Order is important; in the "
-                 "request phase, these middleware classes will be applied in the "
-                 "order given, and in the response phase the middleware will be "
-                 "applied in reverse order")
+            default=[
+                'django.middleware.common.CommonMiddleware',
+                'django.contrib.sessions.middleware.SessionMiddleware',
+                'django.contrib.auth.middleware.AuthenticationMiddleware'],
+            help="List of middleware classes to use. Order is important; in "
+                 "the request phase, these middleware classes will be applied "
+                 "in the order given, and in the response phase the "
+                 "middleware will be applied in reverse order")
 
         ############
         # SESSIONS #
@@ -389,20 +404,20 @@ class BaseDjangoSchema(Schema):
 
         session_cookie_name = StringOption(default='sessionid',
             help="Cookie name")
-        session_cookie_age = IntOption(default=60*60*24*7*2,
+        session_cookie_age = IntOption(default=60 * 60 * 24 * 7 * 2,
             help="Age of cookie, in seconds (default: 2 weeks)")
         session_cookie_domain = StringOption(null=True,
             help="A string like '.lawrence.com', or None for standard "
                  "domain cookie")
-        session_cookie_secure = BoolOption(default=False, 
+        session_cookie_secure = BoolOption(default=False,
             help="Wether the session cookie should be secure (https:// only)")
         session_cookie_path = StringOption(default='/',
             help="The path of the sesion cookie")
         session_save_every_request = BoolOption(default=False,
             help="Whether to save the session data on every request")
         session_expire_at_browser_close = BoolOption(default=False,
-            help="Whether a user's session cookie expires when the Web browser "
-                 "is closed")
+            help="Whether a user's session cookie expires when the Web "
+                 "browser is closed")
         session_engine = StringOption(
             default='django.contrib.sessions.backends.db',
             help="The module to store session data")
@@ -435,14 +450,16 @@ class BaseDjangoSchema(Schema):
             help="The group ID that designates which users are banned. "
                  "Set to None if you're not using it")
         comments_moderators_group = StringOption(null=True,
-            help="The group ID that designates which users can moderate comments. "
-                 "Set to None if you're not using it")
+            help="The group ID that designates which users can moderate "
+                 "comments. Set to None if you're not using it")
         comments_sketchy_users_group = StringOption(null=True,
-            help="The group ID that designates the users whose comments should be "
-                 "e-mailed to MANAGERS. Set to None if you're not using it")
+            help="The group ID that designates the users whose comments "
+                 "should be e-mailed to MANAGERS. Set to None if you're not "
+                 "using it")
         comments_first_few = IntOption(default=0,
-            help="The system will e-mail MANAGERS the first COMMENTS_FIRST_FEW "
-                 "comments by each user. Set this to 0 if you want to disable it")
+            help="The system will e-mail MANAGERS the first "
+                 "COMMENTS_FIRST_FEW comments by each user. Set this to 0 if "
+                 "you want to disable it")
         banned_ips = TupleOption(
             help="A tuple of IP addresses that have been banned from "
                  "participating in various Django-powered features")
@@ -471,15 +488,15 @@ class BaseDjangoSchema(Schema):
             help="The name of the database to use for testing purposes. "
                  "If None, a name of 'test_' + DATABASE_NAME will be assumed")
         test_database_charset = StringOption(null=True,
-            help="Strings used to set the character set and collation order for "
-                 "the test database. These values are passed literally to the "
-                 "server, so they are backend-dependent. If None, no special "
-                 "settings are sent (system defaults are used)")
+            help="Strings used to set the character set and collation order "
+                 "for the test database. These values are passed literally to "
+                 "the server, so they are backend-dependent. If None, no "
+                 "special settings are sent (system defaults are used)")
         test_database_collation = StringOption(null=True,
-            help="Strings used to set the character set and collation order for "
-                 "the test database. These values are passed literally to the "
-                 "server, so they are backend-dependent. If None, no special "
-                 "settings are sent (system defaults are used)")
+            help="Strings used to set the character set and collation order "
+                 "for the test database. These values are passed literally to "
+                 "the server, so they are backend-dependent. If None, no "
+                 "special settings are sent (system defaults are used)")
 
         ############
         # FIXTURES #
@@ -679,8 +696,7 @@ class Django125Schema(Django112Schema):
                     'HOST': '',
                     'PORT': '',
                 }
-            }
-        )
+            })
         database_routers = ListOption(
             item=StringOption(),
             help="Classes used to implement db routing behaviour")
@@ -713,9 +729,9 @@ class Django125Schema(Django112Schema):
         template_context_processors = ListOption(
             item=StringOption(),
             help="List of processors used by RequestContext to populate the "
-                 "context. Each one should be a callable that takes the request "
-                 "object as its only parameter and returns a dictionary to add to "
-                 "the context",
+                 "context. Each one should be a callable that takes the "
+                 "request object as its only parameter and returns a "
+                 "dictionary to add to the context",
             default=[
                 'django.contrib.auth.context_processors.auth',
                 'django.core.context_processors.debug',
@@ -739,11 +755,16 @@ class Django125Schema(Django112Schema):
         date_input_formats = ListOption(
             item=StringOption(),
             default=[
-                '%Y-%m-%d', '%m/%d/%Y', '%m/%d/%y', # '2006-10-25', '10/25/2006', '10/25/06'
-                '%b %d %Y', '%b %d, %Y',               # 'Oct 25 2006', 'Oct 25, 2006'
-                '%d %b %Y', '%d %b, %Y',               # '25 Oct 2006', '25 Oct, 2006'
-                '%B %d %Y', '%B %d, %Y',               # 'October 25 2006', 'October 25, 2006'
-                '%d %B %Y', '%d %B, %Y',               # '25 October 2006', '25 October, 2006'
+                # '2006-10-25', '10/25/2006', '10/25/06'
+                '%Y-%m-%d', '%m/%d/%Y', '%m/%d/%y',
+                # 'Oct 25 2006', 'Oct 25, 2006'
+                '%b %d %Y', '%b %d, %Y',
+                # '25 Oct 2006', '25 Oct, 2006'
+                '%d %b %Y', '%d %b, %Y',
+                # 'October 25 2006', 'October 25, 2006'
+                '%B %d %Y', '%B %d, %Y',
+                # '25 October 2006', '25 October, 2006'
+                '%d %B %Y', '%d %B, %Y',
             ],
             help="Default formats to be used when parsing dates from input "
                 "boxes, in order")
@@ -796,10 +817,10 @@ class Django125Schema(Django112Schema):
         ##############
 
         middleware_classes = ListOption(item=StringOption(),
-            help="List of middleware classes to use. Order is important; in the "
-                 "request phase, these middleware classes will be applied in the "
-                 "order given, and in the response phase the middleware will be "
-                 "applied in reverse order",
+            help="List of middleware classes to use. Order is important; in "
+                 "the request phase, these middleware classes will be applied "
+                 "in the order given, and in the response phase the "
+                 "middleware will be applied in reverse order",
             default=[
                 'django.middleware.common.CommonMiddleware',
                 'django.contrib.sessions.middleware.SessionMiddleware',
@@ -945,9 +966,9 @@ class Django13Schema(Django13Base):
         template_context_processors = ListOption(
             item=StringOption(),
             help="List of processors used by RequestContext to populate the "
-                 "context. Each one should be a callable that takes the request "
-                 "object as its only parameter and returns a dictionary to add to "
-                 "the context",
+                 "context. Each one should be a callable that takes the "
+                 "request object as its only parameter and returns a "
+                 "dictionary to add to the context",
             default=[
                 'django.contrib.auth.context_processors.auth',
                 'django.core.context_processors.debug',
@@ -971,7 +992,8 @@ class Django13Schema(Django13Base):
 
         session_cookie_httponly = BoolOption(
             default=False,
-            help='Whether to use the non-RFC standard htt pOnly flag (IE, FF3+, others)')
+            help="Whether to use the non-RFC standard htt pOnly flag (IE, "
+                 "FF3+, others)")
 
         #########
         # CACHE #
@@ -1001,15 +1023,13 @@ class Django13Schema(Django13Base):
             spec={
                 'version': IntOption(default=1),
                 'disable_existing_loggers': BoolOption(default=False),
-                'handlers': DictOption(
-                    spec={
-                        'mail_admins': DictOption(
-                            spec={
-                                'level': StringOption(default='ERROR'),
-                                'class': StringOption(
-                                    default='django.utils.log.AdminEmailHandler'),
-                            }),
+                'handlers': DictOption(spec={
+                    'mail_admins': DictOption(spec={
+                        'level': StringOption(default='ERROR'),
+                        'class': StringOption(
+                            default='django.utils.log.AdminEmailHandler'),
                     }),
+                }),
                 'loggers': DictOption(
                     spec={
                         'django.request': DictOption(
@@ -1022,9 +1042,9 @@ class Django13Schema(Django13Base):
                             }),
                     }),
             },
-            help='The default logging configuration. This sends an email to the '
-                'site admins on every HTTP 500 error. All other records are sent '
-                'to the bit bucket.')
+            help="The default logging configuration. This sends an email to "
+                 "the site admins on every HTTP 500 error. All other records "
+                 "are sent to the bit bucket.")
 
         ###############
         # STATICFILES #
@@ -1035,15 +1055,16 @@ class Django13Schema(Django13Base):
             help='A list of locations of additional static files')
         staticfiles_storage = StringOption(
             default='django.contrib.staticfiles.storage.StaticFilesStorage',
-            help='The default file storage backend used during the build process')
+            help='The default file storage backend used during the build '
+                 'process')
         staticfiles_finders = ListOption(
             item=StringOption(),
             default=[
                 'django.contrib.staticfiles.finders.FileSystemFinder',
                 'django.contrib.staticfiles.finders.AppDirectoriesFinder',
             ],
-            help='List of finder classes that know how to find static files in '
-                'various locations.')
+            help='List of finder classes that know how to find static files '
+                 'in various locations.')
 
         admin_media_prefix = StringOption(default='/static/admin/',
             help="URL prefix for admin media -- CSS, JavaScript and images. "

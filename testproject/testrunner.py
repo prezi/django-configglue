@@ -15,4 +15,3 @@ def runtests():
 
     call_command('test', 'django_configglue')
     sys.exit(0)
-

@@ -318,7 +318,8 @@ class GlueManagementUtilityTestCase(ConfigGlueDjangoCommandTestCase):
         try:
             self.util.argv = ['', 'help']
             self.assertRaises(SystemExit, self.execute)
-            self.assertTrue(self.util.main_help_text() in self.capture['stderr'])
+            self.assertTrue(
+                self.util.main_help_text() in self.capture['stderr'])
         finally:
             wrapped.__CONFIGGLUE_PARSER__ = old_CONFIGGLUE_PARSER
 
@@ -353,4 +354,3 @@ class UpperCaseDictOptionTestCase(TestCase):
         result = schema.foo.parse('mydict', parser)
 
         self.assertEqual(result, {'BAR': '42'})
-
