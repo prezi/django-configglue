@@ -9,7 +9,10 @@ from django.conf import settings
 from django.core.management import ManagementUtility
 
 from django_configglue.utils import SETTINGS_ENCODING
-from django_configglue.tests.helpers import ConfigGlueDjangoCommandTestCase
+from django_configglue.tests.helpers import (
+    ConfigGlueDjangoCommandTestCase,
+    SchemaHelperTestCase,
+)
 
 
 class SettingsCommandTestCase(ConfigGlueDjangoCommandTestCase):
@@ -31,7 +34,7 @@ class SettingsCommandTestCase(ConfigGlueDjangoCommandTestCase):
 
     def test_show(self):
         expected_values = [
-            "ROOT_URLCONF = 'urls'",
+            "ROOT_URLCONF = '{{ project_name }}.urls'",
             "SITE_ID = 1",
             "SETTINGS_MODULE = 'django_configglue.tests.settings'",
             "SETTINGS_ENCODING = '%s'" % SETTINGS_ENCODING,
@@ -39,8 +42,6 @@ class SettingsCommandTestCase(ConfigGlueDjangoCommandTestCase):
         django_version = django.VERSION[:2]
         if django_version == (1, 1):
             expected_values.append("DATABASE_SUPPORTS_TRANSACTIONS = True")
-        if django_version >= (1, 1):
-            expected_values.append("JING_PATH = '/usr/bin/jing'")
         self.call_command(show_current=True)
         output_lines = self.capture['stdout'].strip().split('\n')
         self.assertEqual(set(expected_values), set(output_lines))
@@ -106,6 +107,34 @@ class SettingsCommandTestCase(ConfigGlueDjangoCommandTestCase):
             expected = '_wrapped'
 
         self.assertEqual(self.wrapped_settings, expected)
+
+
+class GeneratedSettingsTestCase(ConfigGlueDjangoCommandTestCase,
+        SchemaHelperTestCase):
+    def setUp(self):
+        from django_configglue.schema import schemas
+        from mock import patch, Mock
+
+        self.expected_schema = schemas.get(
+            django.get_version(), strict=True)()
+
+        mock_get_version = Mock(return_value='foo')
+        self.patch = patch(
+            'django_configglue.tests.settings.django.get_version',
+            mock_get_version)
+        self.patch.start()
+        super(GeneratedSettingsTestCase, self).setUp()
+
+    def tearDown(self):
+        self.patch.stop()
+        super(GeneratedSettingsTestCase, self).tearDown()
+
+    def test_generated_schema(self):
+        # import here so that the necessary modules can be mocked before
+        # being required
+        from django.conf import settings
+        schema = settings.__CONFIGGLUE_PARSER__.schema
+        self.assert_schemas_equal(schema, self.expected_schema)
 
 
 class ValidateCommandTestCase(ConfigGlueDjangoCommandTestCase):

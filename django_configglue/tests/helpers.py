@@ -11,6 +11,12 @@ from django.core import management
 from django.conf import settings
 from django.test import TestCase
 
+from configglue.pyschema.schema import (
+    ListOption,
+    TupleOption,
+    Schema,
+)
+
 
 class ConfigGlueDjangoCommandTestCase(TestCase):
     COMMAND = ''
@@ -118,3 +124,54 @@ class ConfigGlueDjangoCommandTestCase(TestCase):
         finally:
             self.end_capture()
 
+
+class SchemaHelperTestCase(TestCase):
+    def assert_schema_structure(self, schema_cls, version, options):
+        self.assertTrue(issubclass(schema_cls, Schema))
+        self.assertEqual(schema_cls.version, 'bogus')
+
+        schema = schema_cls()
+
+        # assert sections
+        section_names = [section.name for section in schema.sections()]
+        self.assertEqual(section_names, ['django'])
+        # assert options for django section
+        option_names = [option.name for option in schema.options('django')]
+        self.assertEqual(option_names, options.keys())
+        # assert options
+        for name, value in options.items():
+            option = schema.section('django').option(name)
+            self.assertEqual(type(option), type(value))
+            self.assertEqual(option.default, value.default)
+
+    def assert_schemas_equal(self, this, other):
+        # compare schemas
+        this_sections = sorted(
+            [section.name for section in this.sections()])
+        other_sections = sorted(
+            [section.name for section in other.sections()])
+        self.assertEqual(this_sections, other_sections)
+        self.assertEqual(this_sections, ['django'])
+
+        # compare options
+        section = this.section('django')
+        expected_section = other.section('django')
+        options = section.options()
+
+        this_options = sorted(
+            [option.name for option in options])
+        other_options = sorted(
+            [option.name for option in expected_section.options()])
+        self.assertEqual(this_options, other_options)
+
+        for option in options:
+            expected_option = expected_section.option(option.name)
+            # handle special case for list/tuple
+            # django defaults to tuples for options it defines as lists
+            if (isinstance(option, (ListOption, TupleOption)) or
+                    isinstance(expected_option, (ListOption, TupleOption))):
+                self.assertEqual(list(option.default),
+                    list(expected_option.default))
+            else:
+                self.assertEqual(option.default,
+                    expected_option.default)

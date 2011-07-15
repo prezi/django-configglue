@@ -1,5 +1,6 @@
 # Copyright 2010 Canonical Ltd.  This software is licensed under the
 # GNU Lesser General Public License version 3 (see the file LICENSE).
+import inspect
 import logging
 
 from configglue.pyschema.schema import (
@@ -13,6 +14,8 @@ from configglue.pyschema.schema import (
     TupleOption,
 )
 from django import get_version
+from django.conf import global_settings
+from django.conf.project_template import settings as project_settings
 
 
 # As in django.conf.global_settings:
@@ -30,6 +33,32 @@ class UpperCaseDictOption(DictOption):
         for k, v in parsed.items():
             result[k.upper()] = v
         return result
+
+
+def derivate_django_schema(schema, exclude=None):
+    """Return a modified version of a schema.
+
+    The source schema *must* have a 'version' attribute and
+    a 'django' section.
+
+    The resulting schema is almost a copy of the original one, except
+    for excluded options in the 'django' section.
+    """
+    if not exclude:
+        return schema
+
+    # create the schema class
+    cls = type(schema.__name__, (schema,), {'version': schema.version})
+    # include all non-excluded options
+    options = {}
+    for option in schema().django.options():
+        if option.name in exclude:
+            continue
+        options[option.name] = option
+    # create the 'django' section
+    django_section = type('django', (Section,), options)
+    setattr(cls, 'django', django_section)
+    return cls
 
 
 class BaseDjangoSchema(Schema):
@@ -53,7 +82,7 @@ class BaseDjangoSchema(Schema):
             help="Whether to use the 'Etag' header. This saves bandwidth but "
                  "slows down performance.")
 
-        admins = ListOption(item=TupleOption(2), default=[],
+        admins = ListOption(item=TupleOption(length=2), default=[],
             help="People who get code error notifications. In the format "
                  "(('Full Name', 'email@domain.com'), "
                  "('Full Name', 'anotheremail@domain.com'))")
@@ -136,7 +165,7 @@ class BaseDjangoSchema(Schema):
         locale_paths = ListOption(item=StringOption())
         language_cookie_name = StringOption(default='django_language')
 
-        managers = ListOption(item=TupleOption(2), default=[],
+        managers = ListOption(item=TupleOption(length=2), default=[],
             help="Not-necessarily-technical managers of the site. They get broken "
                  "link notifications and other various e-mails")
 
@@ -464,14 +493,18 @@ class BaseDjangoSchema(Schema):
         ####################
 
         site_id = IntOption(default=1)
-        root_urlconf = StringOption(default='urls')
+        root_urlconf = StringOption(default='{{ project_name }}.urls')
 
 
-class Django112Schema(BaseDjangoSchema):
+Django112Base = derivate_django_schema(
+    BaseDjangoSchema, exclude=['jing_path'])
+
+
+class Django112Schema(Django112Base):
     version = '1.1.2'
 
     # sections
-    class django(BaseDjangoSchema.django):
+    class django(Django112Base.django):
 
         ################
         # CORE         #
@@ -483,7 +516,7 @@ class Django112Schema(BaseDjangoSchema):
             help="Languages we provide translations for, out of the box. "
                  "The language name should be the utf-8 encoded local name "
                  "for the language",
-            default = [
+            default=[
                 ('ar', gettext_noop('Arabic')),
                 ('bg', gettext_noop('Bulgarian')),
                 ('bn', gettext_noop('Bengali')),
@@ -558,7 +591,7 @@ class Django125Schema(Django112Schema):
             help="Languages we provide translations for, out of the box. "
                  "The language name should be the utf-8 encoded local name "
                  "for the language",
-            default = [
+            default=[
                 ('ar', gettext_noop('Arabic')),
                 ('bg', gettext_noop('Bulgarian')),
                 ('bn', gettext_noop('Bengali')),
@@ -637,6 +670,16 @@ class Django125Schema(Django112Schema):
                 'host': StringOption(),
                 'port': StringOption(),
             }),
+            default={
+                'default': {
+                    'ENGINE': 'django.db.backends.',
+                    'NAME': '',
+                    'USER': '',
+                    'PASSWORD': '',
+                    'HOST': '',
+                    'PORT': '',
+                }
+            }
         )
         database_routers = ListOption(
             item=StringOption(),
@@ -651,7 +694,7 @@ class Django125Schema(Django112Schema):
 
         installed_apps = ListOption(item=StringOption(),
             help="List of strings representing installed apps",
-            default = [
+            default=[
                 'django.contrib.auth',
                 'django.contrib.contenttypes',
                 'django.contrib.sessions',
@@ -662,7 +705,7 @@ class Django125Schema(Django112Schema):
         template_loaders = ListOption(item=StringOption(),
             help="List of callables that know how to import templates from "
                  "various sources",
-            default = [
+            default=[
                 'django.template.loaders.filesystem.Loader',
                 'django.template.loaders.app_directories.Loader',
             ])
@@ -673,7 +716,7 @@ class Django125Schema(Django112Schema):
                  "context. Each one should be a callable that takes the request "
                  "object as its only parameter and returns a dictionary to add to "
                  "the context",
-            default = [
+            default=[
                 'django.contrib.auth.context_processors.auth',
                 'django.core.context_processors.debug',
                 'django.core.context_processors.i18n',
@@ -696,34 +739,34 @@ class Django125Schema(Django112Schema):
         date_input_formats = ListOption(
             item=StringOption(),
             default=[
-                '%%Y-%%m-%%d', '%%m/%%d/%%Y', '%%m/%%d/%%y', # '2006-10-25', '10/25/2006', '10/25/06'
-                '%%b %%d %%Y', '%%b %%d, %%Y',               # 'Oct 25 2006', 'Oct 25, 2006'
-                '%%d %%b %%Y', '%%d %%b, %%Y',               # '25 Oct 2006', '25 Oct, 2006'
-                '%%B %%d %%Y', '%%B %%d, %%Y',               # 'October 25 2006', 'October 25, 2006'
-                '%%d %%B %%Y', '%%d %%B, %%Y',               # '25 October 2006', '25 October, 2006'
+                '%Y-%m-%d', '%m/%d/%Y', '%m/%d/%y', # '2006-10-25', '10/25/2006', '10/25/06'
+                '%b %d %Y', '%b %d, %Y',               # 'Oct 25 2006', 'Oct 25, 2006'
+                '%d %b %Y', '%d %b, %Y',               # '25 Oct 2006', '25 Oct, 2006'
+                '%B %d %Y', '%B %d, %Y',               # 'October 25 2006', 'October 25, 2006'
+                '%d %B %Y', '%d %B, %Y',               # '25 October 2006', '25 October, 2006'
             ],
             help="Default formats to be used when parsing dates from input "
                 "boxes, in order")
         time_input_formats = ListOption(
             item=StringOption(),
             default=[
-                '%%H:%%M:%%S',     # '14:30:59'
-                '%%H:%%M',         # '14:30'
+                '%H:%M:%S',     # '14:30:59'
+                '%H:%M',         # '14:30'
             ],
             help="Default formats to be used when parsing times from input "
                 "boxes, in order")
         datetime_input_formats = ListOption(
             item=StringOption(),
             default=[
-                '%%Y-%%m-%%d %%H:%%M:%%S',     # '2006-10-25 14:30:59'
-                '%%Y-%%m-%%d %%H:%%M',         # '2006-10-25 14:30'
-                '%%Y-%%m-%%d',                 # '2006-10-25'
-                '%%m/%%d/%%Y %%H:%%M:%%S',     # '10/25/2006 14:30:59'
-                '%%m/%%d/%%Y %%H:%%M',         # '10/25/2006 14:30'
-                '%%m/%%d/%%Y',                 # '10/25/2006'
-                '%%m/%%d/%%y %%H:%%M:%%S',     # '10/25/06 14:30:59'
-                '%%m/%%d/%%y %%H:%%M',         # '10/25/06 14:30'
-                '%%m/%%d/%%y',                 # '10/25/06'
+                '%Y-%m-%d %H:%M:%S',      # '2006-10-25 14:30:59'
+                '%Y-%m-%d %H:%M',         # '2006-10-25 14:30'
+                '%Y-%m-%d',               # '2006-10-25'
+                '%m/%d/%Y %H:%M:%S',      # '10/25/2006 14:30:59'
+                '%m/%d/%Y %H:%M',         # '10/25/2006 14:30'
+                '%m/%d/%Y',               # '10/25/2006'
+                '%m/%d/%y %H:%M:%S',      # '10/25/06 14:30:59'
+                '%m/%d/%y %H:%M',         # '10/25/06 14:30'
+                '%m/%d/%y',               # '10/25/06'
             ],
             help="Default formats to be used when parsing dates and times "
                 "from input boxes, in order")
@@ -757,7 +800,7 @@ class Django125Schema(Django112Schema):
                  "request phase, these middleware classes will be applied in the "
                  "order given, and in the response phase the middleware will be "
                  "applied in reverse order",
-            default = [
+            default=[
                 'django.middleware.common.CommonMiddleware',
                 'django.contrib.sessions.middleware.SessionMiddleware',
                 'django.middleware.csrf.CsrfViewMiddleware',
@@ -798,11 +841,15 @@ class Django125Schema(Django112Schema):
             help="The name of the class to use to run the test suite")
 
 
-class Django13Schema(Django125Schema):
+Django13Base = derivate_django_schema(
+    Django125Schema, exclude=['cache_backend'])
+
+
+class Django13Schema(Django13Base):
     version = '1.3'
 
     # sections
-    class django(Django125Schema.django):
+    class django(Django13Base.django):
 
         ################
         # CORE         #
@@ -814,7 +861,7 @@ class Django13Schema(Django125Schema):
             help="Languages we provide translations for, out of the box. "
                  "The language name should be the utf-8 encoded local name "
                  "for the language",
-            default = [
+            default=[
                 ('ar', gettext_noop('Arabic')),
                 ('az', gettext_noop('Azerbaijani')),
                 ('bg', gettext_noop('Bulgarian')),
@@ -884,13 +931,24 @@ class Django13Schema(Django125Schema):
                 ('zh-tw', gettext_noop('Traditional Chinese')),
             ])
 
+        installed_apps = ListOption(item=StringOption(),
+            help="List of strings representing installed apps",
+            default=[
+                'django.contrib.auth',
+                'django.contrib.contenttypes',
+                'django.contrib.sessions',
+                'django.contrib.sites',
+                'django.contrib.messages',
+                'django.contrib.staticfiles',
+            ])
+
         template_context_processors = ListOption(
             item=StringOption(),
             help="List of processors used by RequestContext to populate the "
                  "context. Each one should be a callable that takes the request "
                  "object as its only parameter and returns a dictionary to add to "
                  "the context",
-            default = [
+            default=[
                 'django.contrib.auth.context_processors.auth',
                 'django.core.context_processors.debug',
                 'django.core.context_processors.i18n',
@@ -904,7 +962,7 @@ class Django13Schema(Django125Schema):
             help='Absolute path to the directory that holds static files.')
 
         static_url = StringOption(
-            null=True, default=None,
+            null=True, default='/static/',
             help='URL that handles the static files served from STATIC_ROOT.')
 
         ############
@@ -918,9 +976,6 @@ class Django13Schema(Django125Schema):
         #########
         # CACHE #
         #########
-
-        # remove obsoleted setting
-        cache_backend = None
 
         caches = DictOption()
         cache_middleware_alias = StringOption(default='default')
@@ -1010,25 +1065,84 @@ class DjangoSchemaFactory(object):
         self._schemas[version] = schema_cls
 
     def get(self, version, strict=True):
-        if version not in self._schemas:
-            msg = "No schema registered for version %r" % version
-            if strict:
-                raise ValueError(msg)
+        if version in self._schemas:
+            return self._schemas[version]
+
+        msg = "No schema registered for version %r" % version
+        if strict:
+            raise ValueError(msg)
+        else:
+            logging.warn(msg)
+
+        logging.warn("Dynamically creating schema for version %r" % version)
+        schema = self.build(version)
+        return schema
+
+    def build(self, version_string=None, options=None):
+        if version_string is None:
+            version_string = get_version()
+        if options is None:
+            options = dict([(name.lower(), value) for (name, value) in
+                inspect.getmembers(global_settings) if name.isupper()])
+            project_options = dict([(name.lower(), value) for (name, value) in
+                inspect.getmembers(project_settings) if name.isupper()])
+            options.update(project_options)
+
+        class DjangoSchema(Schema):
+            version = version_string
+
+            class django(Section):
+                pass
+
+        def get_option_type(name, value):
+            type_mappings = {
+                int: IntOption,
+                bool: BoolOption,
+                list: ListOption,
+                tuple: TupleOption,
+                dict: DictOption,
+                str: StringOption,
+                unicode: StringOption,
+            }
+            if value is None:
+                return StringOption(name=name, default=value, null=True)
             else:
-                logging.warn(msg)
+                option_type = type_mappings[type(value)]
+                kwargs = {'name': name, 'default': value}
 
-            versions = sorted(self._schemas.keys())
-            if not versions:
-                raise ValueError("No schemas registered")
+                if option_type in (DictOption, ListOption):
+                    # get inner item type
+                    if option_type == DictOption:
+                        items = value.values()
+                    else:
+                        items = value
 
-            last = versions[0]
-            for v in sorted(self._schemas.keys()):
-                if version < v:
-                    break
-                last = v
-            version = last
-            logging.warn("Falling back to schema for version %r" % version)
-        return self._schemas[version]
+                    item_type = None
+                    if items:
+                        item_type = type_mappings.get(type(items[0]), None)
+                        # make sure all items have a consistent type
+                        for item in items:
+                            current_item_type = type_mappings.get(
+                                type(item), None)
+                            if current_item_type != item_type:
+                                item_type = None
+                                # mismatching types found. fallback to default
+                                # item type
+                                break
+                    if item_type is not None:
+                        kwargs['item'] = item_type()
+
+                return option_type(**kwargs)
+
+        for name, value in options.items():
+            if name == '__CONFIGGLUE_PARSER__':
+                continue
+            option = get_option_type(name, value)
+            setattr(DjangoSchema.django, name, option)
+
+        # register schema for it to be available during next query
+        self.register(DjangoSchema, version_string)
+        return DjangoSchema
 
 
 schemas = DjangoSchemaFactory()
