@@ -1,4 +1,4 @@
-# Copyright 2010 Canonical Ltd.  This software is licensed under the
+# Copyright 2010-2011 Canonical Ltd.  This software is licensed under the
 # GNU Lesser General Public License version 3 (see the file LICENSE).
 
 import os.path
@@ -8,7 +8,10 @@ from django import get_version
 from django.conf import settings
 from django.core.management import ManagementUtility
 
+from mock import patch, Mock
+
 from django_configglue.utils import SETTINGS_ENCODING
+from django_configglue.schema import schemas
 from django_configglue.tests.helpers import (
     ConfigGlueDjangoCommandTestCase,
     SchemaHelperTestCase,
@@ -112,9 +115,6 @@ class SettingsCommandTestCase(ConfigGlueDjangoCommandTestCase):
 class GeneratedSettingsTestCase(ConfigGlueDjangoCommandTestCase,
         SchemaHelperTestCase):
     def setUp(self):
-        from django_configglue.schema import schemas
-        from mock import patch, Mock
-
         self.expected_schema = schemas.get(
             django.get_version(), strict=True)()
 
@@ -129,12 +129,17 @@ class GeneratedSettingsTestCase(ConfigGlueDjangoCommandTestCase,
         self.patch.stop()
         super(GeneratedSettingsTestCase, self).tearDown()
 
-    def test_generated_schema(self):
+    @patch('django_configglue.schema.logging.warn')
+    def test_generated_schema(self, mock_warn):
         # import here so that the necessary modules can be mocked before
         # being required
         from django.conf import settings
         schema = settings.__CONFIGGLUE_PARSER__.schema
         self.assert_schemas_equal(schema, self.expected_schema)
+
+        self.assertEqual(mock_warn.call_args_list,
+            [(("No schema registered for version 'foo'",), {}),
+             (("Dynamically creating schema for version 'foo'",), {})])
 
 
 class ValidateCommandTestCase(ConfigGlueDjangoCommandTestCase):

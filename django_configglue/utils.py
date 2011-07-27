@@ -1,8 +1,8 @@
-# Copyright 2010 Canonical Ltd.  This software is licensed under the
+# Copyright 2010-2011 Canonical Ltd.  This software is licensed under the
 # GNU Lesser General Public License version 3 (see the file LICENSE).
 import sys
 
-from configglue.pyschema.parser import SchemaConfigParser
+from configglue.parser import SchemaConfigParser
 
 
 SETTINGS_ENCODING = 'utf-8'

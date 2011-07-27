@@ -1,4 +1,4 @@
-# Copyright 2010 Canonical Ltd.
+# Copyright 2010-2011 Canonical Ltd.
 # Copyright Django Software Foundation and individual contributors
 # This software is licensed under the
 # GNU Lesser General Public License version 3 (see the file LICENSE)
@@ -9,7 +9,7 @@ import sys
 
 import django
 import django.core.management
-from configglue.pyschema.glue import schemaconfigglue
+from configglue.glue import schemaconfigglue
 from django.core.management import ManagementUtility, LaxOptionParser
 from django.core.management.base import BaseCommand, handle_default_options
 from django.conf import settings

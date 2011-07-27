@@ -25,7 +25,7 @@ configuration files. ::
 Replace *settings.py* with ::
 
     import django
-    from configglue.pyschema import SchemaConfigParser
+    from configglue.parser import SchemaConfigParser
     from django_configglue.utils import update_settings
     from django_configglue.schema import schemas
 

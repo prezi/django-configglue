@@ -1,4 +1,4 @@
-# Copyright 2010 Canonical Ltd.  This software is licensed under the
+# Copyright 2010-2011 Canonical Ltd.  This software is licensed under the
 # GNU Lesser General Public License version 3 (see the file LICENSE).
 
 from setuptools import setup, find_packages
@@ -38,7 +38,7 @@ setup(
 
     # content
     packages=find_packages(exclude=['testproject*']),
-    install_requires=['django >= 1.0.2-final', 'configglue > 0.10'],
+    install_requires=['django >= 1.0.2-final', 'configglue >= 1.0'],
 
     # tests
     test_suite='testproject.testrunner.runtests',

@@ -4,9 +4,9 @@ Maintainer: Ricardo Kirkner <ricardo.kirkner@canonical.com>
 Source: https://launchpad.net/django-configglue
 
 Files: *
-Copyright: 2010, Canonical Ltd. (http://www.canonical.com/)
+Copyright: 2010-2011, Canonical Ltd. (http://www.canonical.com/)
 License: LGPL-3
- django-configglue is Copyright 2010 Canonical Ltd.
+ django-configglue is Copyright 2010-2011 Canonical Ltd.
  .
  Canonical Ltd ("Canonical") distributes the source code for the
  django-configglue under the GNU Lesser General Public License,
@@ -18,7 +18,7 @@ License: LGPL-3
  All rights not expressly granted are reserved.
 
 Files: django_configglue/__init__.py
-Copyright: 2010, Canonical Ltd. (http://www.canonical.com/)
+Copyright: 2010-2011, Canonical Ltd. (http://www.canonical.com/)
            2010, Django Software Foundation and individual contributors
 License: other
  Copyright (c) Django Software Foundation and individual contributors.

@@ -13,7 +13,7 @@ support in our configuration files.
 Start by creating a module called *schema.py*, such as ::
 
     import django
-    from configglue.pyschema import Schema, IntConfigOption, BoolConfigOption
+    from configglue.schema import Schema, IntOption, BoolOption
     from django_configglue.schema import schemas
 
 
@@ -54,7 +54,7 @@ it can read out the settings defined in our configuration files.
 
 Replace the standard *settings.py* module in your project with ::
 
-    from configglue.pyschema import SchemaConfigParser
+    from configglue.parser import SchemaConfigParser
     from django_configglue.utils import update_settings
 
     from schema import MySchema
