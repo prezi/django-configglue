@@ -229,6 +229,12 @@ class DjangoSupportTestCase(SchemaHelperTestCase):
             inspect.getmembers(global_settings) if name.isupper()])
         project_options = dict([(name.lower(), value) for (name, value) in
             inspect.getmembers(project_settings) if name.isupper()])
+        # handle special case of ROOT_URLCONF which depends on the
+        # project name
+        root_urlconf = project_options['root_urlconf'].replace(
+            '{{ project_name }}.', '')
+        project_options['root_urlconf'] = root_urlconf
+
         options.update(project_options)
         expected = schemas.build(django.get_version(), options)()
 

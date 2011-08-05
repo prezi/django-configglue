@@ -38,7 +38,7 @@ class SettingsCommandTestCase(ConfigGlueDjangoCommandTestCase):
 
     def test_show(self):
         expected_values = [
-            "ROOT_URLCONF = '{{ project_name }}.urls'",
+            "ROOT_URLCONF = 'urls'",
             "SITE_ID = 1",
             "SETTINGS_MODULE = 'django_configglue.tests.settings'",
             "SETTINGS_ENCODING = '%s'" % SETTINGS_ENCODING,

@@ -510,7 +510,10 @@ class BaseDjangoSchema(Schema):
         ####################
 
         site_id = IntOption(default=1)
-        root_urlconf = StringOption(default='{{ project_name }}.urls')
+        # use a slightly different default than in the project settings
+        # template as it includes the {{ project_name }} variable
+        # not relying on that variable makes more sense in this case
+        root_urlconf = StringOption(default='urls')
 
 
 Django112Base = derivate_django_schema(
@@ -1107,6 +1110,12 @@ class DjangoSchemaFactory(object):
                 inspect.getmembers(global_settings) if name.isupper()])
             project_options = dict([(name.lower(), value) for (name, value) in
                 inspect.getmembers(project_settings) if name.isupper()])
+            # handle special case of ROOT_URLCONF which depends on the
+            # project name
+            root_urlconf = project_options['root_urlconf'].replace(
+                '{{ project_name }}.', '')
+            project_options['root_urlconf'] = root_urlconf
+
             options.update(project_options)
 
         class DjangoSchema(Schema):
