@@ -13,15 +13,15 @@ support in our configuration files.
 Start by creating a module called *schema.py*, such as ::
 
     import django
-    from configglue.schema import Schema, IntOption, BoolOption
+    from configglue import schema
     from django_configglue.schema import schemas
 
 
     DjangoSchema = schemas.get(django.get_version())
 
     class MySchema(DjangoSchema):
-        foo = IntConfigOption()
-        bar = BoolConfigOption()
+        foo = schema.IntOption()
+        bar = schema.BoolOption()
 
 The `MySchema` schema will support all Django supported settings (as defined
 in the `DjangoSchema` schema), and it introduces two custom options (`foo` and
@@ -40,11 +40,12 @@ want to have for our options. Create a file called *main.cfg* ::
     [django]
     database_engine = sqlite3
     database_name = :memory:
-    installed_apps = django.contrib.auth
-                     django.contrib.contenttypes
-                     django.contrib.sessions
-                     django.contrib.sites
-                     django_configglue
+    installed_apps =
+        django.contrib.auth
+        django.contrib.contenttypes
+        django.contrib.sessions
+        django.contrib.sites
+        django_configglue
 
 Glue into django
 ----------------
@@ -54,19 +55,11 @@ it can read out the settings defined in our configuration files.
 
 Replace the standard *settings.py* module in your project with ::
 
-    from configglue.parser import SchemaConfigParser
-    from django_configglue.utils import update_settings
+    from django_configglue.utils import configglue
+    from .schema import MySchema
 
-    from schema import MySchema
-
-
-    # parse config file
-    parser = SchemaConfigParser(MySchema())
-    parser.read(['main.cfg', 'local.cfg'])
-    update_settings(parser, locals())
-
-    # keep parser reference
-    __CONFIGGLUE_PARSER__ = parser
+    # make django aware of configglue-based configuration
+    configglue(MySchema, ['main.cfg'], __name__)
 
 Test
 ----

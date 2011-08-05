@@ -25,19 +25,13 @@ configuration files. ::
 Replace *settings.py* with ::
 
     import django
-    from configglue.parser import SchemaConfigParser
-    from django_configglue.utils import update_settings
     from django_configglue.schema import schemas
-
+    from django_configglue.utils import configglue
 
     DjangoSchema = schemas.get(django.get_version())
-    # parse config file
-    parser = SchemaConfigParser(DjangoSchema())
-    parser.read(['main.cfg', 'local.cfg'])
-    update_settings(parser, locals())
 
-    # keep parser reference
-    __CONFIGGLUE_PARSER__ = parser
+    # make django aware of configglue-based configuration
+    configglue(DjangoSchema, ['main.cfg', 'local.cfg'], __name__)
 
 
 This code snippet defines a schema (a static description of which
@@ -161,11 +155,12 @@ For example, if you add this to *main.cfg* ::
 and create a *custom.cfg* file with the following content::
 
     [django]
-    installed_apps = django.contrib.auth
-                     django.contrib.contenttypes
-                     django.contrib.sessions
-                     django.contrib.sites
-                     django_configglue
+    installed_apps =
+        django.contrib.auth
+        django.contrib.contenttypes
+        django.contrib.sessions
+        django.contrib.sites
+        django_configglue
 
 The *INSTALLED_APPS* setting will be read from the *custom.cfg* configuration
 file, as can be verified by running ::
@@ -240,7 +235,7 @@ specify ::
 Take care that the specified value has to be valid according the the option's
 type, as defined by it's schema, as it will be casted to match it.
 
-In this example, the type for *INTERNAL_IPS* is a `TupleConfigOption`, so the
+In this example, the type for *INTERNAL_IPS* is a `TupleOption`, so the
 value will be interpreted as a tuple of strings, separated by commas.
 
 
@@ -268,7 +263,7 @@ corresponding error will be raised ::
     $ python manage.py settings --django_site_id=foo
     Traceback (most recent call last):
     ...
-    ValueError: Invalid value 'foo' for IntConfigOption 'site_id' in section 'django'. Original exception was: invalid literal for int() with base 10: 'foo'.
+    ValueError: Invalid value 'foo' for IntOption 'site_id' in section 'django'. Original exception was: invalid literal for int() with base 10: 'foo'.
 
 If, on the other hand, an invalid section name is used that will be reported
 too. Edit the *custom.cfg* file so that the section name reads ::
@@ -284,12 +279,8 @@ When validating the configuration ::
     $ python manage.py settings --validate
     Error: Settings did not validate againt schema.
 
-    Sections in configuration do not match schema: dajngo, __main__
+    Sections in configuration are missing from schema: dajngo
 
 it will be noted that the *dajngo* section is not valid according to the
 schema used.
-
-.. note:: __main__ should not be listed as an invalid section.
-    This is a bug and has already been reported as such.
-
 
