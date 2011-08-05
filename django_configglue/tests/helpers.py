@@ -1,6 +1,7 @@
 # Copyright 2010-2011 Canonical Ltd.  This software is licensed under the
 # GNU Lesser General Public License version 3 (see the file LICENSE).
 
+import logging
 import os
 import sys
 import textwrap
@@ -22,6 +23,10 @@ class ConfigGlueDjangoCommandTestCase(TestCase):
     COMMAND = ''
 
     def setUp(self):
+        # disable logging during tests
+        self.level = logging.getLogger().level
+        logging.disable(logging.ERROR)
+
         config = textwrap.dedent("""
             [django]
             database_engine = sqlite3
@@ -47,6 +52,9 @@ class ConfigGlueDjangoCommandTestCase(TestCase):
         self._DJANGO_SETTINGS_MODULE = self.load_settings()
 
     def tearDown(self):
+        # re-enable logging
+        logging.getLogger().setLevel(self.level)
+
         self.load_settings(self._DJANGO_SETTINGS_MODULE)
         self.assertEqual(os.environ['DJANGO_SETTINGS_MODULE'],
                          self._DJANGO_SETTINGS_MODULE)
@@ -126,6 +134,15 @@ class ConfigGlueDjangoCommandTestCase(TestCase):
 
 
 class SchemaHelperTestCase(TestCase):
+    def setUp(self):
+        # disable logging during tests
+        self.level = logging.getLogger().level
+        logging.disable(logging.ERROR)
+
+    def tearDown(self):
+        # re-enable logging
+        logging.getLogger().setLevel(self.level)
+
     def assert_schema_structure(self, schema_cls, version, options):
         self.assertTrue(issubclass(schema_cls, Schema))
         self.assertEqual(schema_cls.version, 'bogus')

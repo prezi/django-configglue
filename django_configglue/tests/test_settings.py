@@ -1,3 +1,4 @@
+import pdb
 # Copyright 2010-2011 Canonical Ltd.  This software is licensed under the
 # GNU Lesser General Public License version 3 (see the file LICENSE).
 
@@ -119,25 +120,29 @@ class GeneratedSettingsTestCase(ConfigGlueDjangoCommandTestCase,
             django.get_version(), strict=True)()
 
         mock_get_version = Mock(return_value='foo')
-        self.patch = patch(
+        self.patch_get_version = patch(
             'django_configglue.tests.settings.django.get_version',
             mock_get_version)
-        self.patch.start()
+        self.patch_get_version.start()
+        self.mock_warn = Mock()
+        self.patch_warn = patch(
+            'django_configglue.schema.logging.warn', self.mock_warn)
+        self.patch_warn.start()
         super(GeneratedSettingsTestCase, self).setUp()
 
     def tearDown(self):
-        self.patch.stop()
+        self.patch_get_version.stop()
+        self.patch_warn.stop()
         super(GeneratedSettingsTestCase, self).tearDown()
 
-    @patch('django_configglue.schema.logging.warn')
-    def test_generated_schema(self, mock_warn):
+    def test_generated_schema(self):
         # import here so that the necessary modules can be mocked before
         # being required
         from django.conf import settings
         schema = settings.__CONFIGGLUE_PARSER__.schema
-        self.assert_schemas_equal(schema, self.expected_schema)
 
-        self.assertEqual(mock_warn.call_args_list,
+        self.assert_schemas_equal(schema, self.expected_schema)
+        self.assertEqual(self.mock_warn.call_args_list,
             [(("No schema registered for version 'foo'",), {}),
              (("Dynamically creating schema for version 'foo'",), {})])
 

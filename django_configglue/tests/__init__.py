@@ -2,5 +2,5 @@
 # GNU Lesser General Public License version 3 (see the file LICENSE).
 
 # import all test modules to conform to Django requirements
-from test_settings import *
 from test_configglue import *
+from test_settings import *

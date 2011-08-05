@@ -116,8 +116,13 @@ class DjangoSupportTestCase(SchemaHelperTestCase):
         configglue(schema, [], target)
         # target is consistent with django's settings module
         # except for a few keys
+        exclude_keys = ['DATABASE_SUPPORTS_TRANSACTIONS', 'SETTINGS_MODULE']
+        # CACHE_BACKEND has been removed from django 1.3 schema but is
+        # added by django at runtime, so let's skip that too
+        if schema.version >= '1.3':
+            exclude_keys.append('CACHE_BACKEND')
         shared_key = lambda x: (not x.startswith('__') and x.upper() == x and
-            x not in ('DATABASE_SUPPORTS_TRANSACTIONS', 'SETTINGS_MODULE'))
+            x not in exclude_keys)
         expected_keys = set(filter(shared_key, dir(settings)))
         target_keys = set(filter(shared_key, target.keys()))
 
