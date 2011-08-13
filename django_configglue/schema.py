@@ -1002,7 +1002,11 @@ class Django13Schema(Django13Base):
         # CACHE #
         #########
 
-        caches = DictOption()
+        caches = DictOption(
+            item=UpperCaseDictOption(spec={
+                'backend': StringOption(),
+                'location': StringOption()})
+            )
         cache_middleware_alias = StringOption(default='default')
 
         ############

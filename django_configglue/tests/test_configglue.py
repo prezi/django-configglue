@@ -274,6 +274,15 @@ class DjangoSupportTestCase(SchemaHelperTestCase):
         derivated = derivate_django_schema(Parent)
         self.assertEqual(derivated, Parent)
 
+    def test_django13_caches(self):
+        schema = schemas.get('1.3')
+        expected = DictOption(
+            item=UpperCaseDictOption(
+                spec={
+                    'backend': StringOption(),
+                    'location': StringOption()}))
+        self.assertEqual(schema.django.caches.item, expected.item)
+
 
 class GlueManagementUtilityTestCase(ConfigGlueDjangoCommandTestCase):
     def setUp(self):
