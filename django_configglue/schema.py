@@ -1023,31 +1023,60 @@ class Django13Schema(Django13Base):
         # LOGGING #
         ###########
 
-        logging_config = StringOption(
+        logging_config = StringOption(null=True,
             default='django.utils.log.dictConfig',
             help='The callable to use to configure logging')
         logging = DictOption(
             spec={
                 'version': IntOption(default=1),
-                'disable_existing_loggers': BoolOption(default=False),
-                'handlers': DictOption(spec={
-                    'mail_admins': DictOption(spec={
-                        'level': StringOption(default='ERROR'),
-                        'class': StringOption(
-                            default='django.utils.log.AdminEmailHandler'),
-                    }),
-                }),
+                'formatters': DictOption(
+                    item=DictOption(
+                        spec={
+                            'format': StringOption(null=True),
+                            'datefmt': StringOption(null=True)})),
+                'filters': DictOption(
+                    item=DictOption(
+                        spec={'name': StringOption()})),
+                'handlers': DictOption(
+                    item=DictOption(
+                        spec={
+                            'class': StringOption(fatal=True),
+                            'level': StringOption(),
+                            'formatter': StringOption(),
+                            'filters': StringOption()})),
                 'loggers': DictOption(
+                    item=DictOption(
+                        spec={
+                            'level': StringOption(),
+                            'propagate': BoolOption(),
+                            'filters': ListOption(item=StringOption()),
+                            'handlers': ListOption(item=StringOption()),
+                            })),
+                'root': DictOption(
                     spec={
-                        'django.request': DictOption(
-                            spec={
-                                'handlers': ListOption(
-                                    item=StringOption(),
-                                    default=['mail_admins']),
-                                'level': StringOption(default='ERROR'),
-                                'propagate': BoolOption(default=True),
-                            }),
-                    }),
+                        'level': StringOption(),
+                        'filters': ListOption(item=StringOption()),
+                        'handlers': ListOption(item=StringOption()),
+                        }),
+                'incremental': BoolOption(default=False),
+                'disable_existing_loggers': BoolOption(default=False),
+            },
+            default={
+                'version': 1,
+                'handlers': {
+                    'mail_admins': {
+                        'level': 'ERROR',
+                        'class': 'django.utils.log.AdminEmailHandler',
+                    },
+                },
+                'loggers': {
+                    'django.request': {
+                        'handlers': ['mail_admins'],
+                        'level': 'ERROR',
+                        'propagate': True,
+                    },
+                },
+                'disable_existing_loggers': False,
             },
             help="The default logging configuration. This sends an email to "
                  "the site admins on every HTTP 500 error. All other records "

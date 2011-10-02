@@ -283,6 +283,57 @@ class DjangoSupportTestCase(SchemaHelperTestCase):
                     'location': StringOption()}))
         self.assertEqual(schema.django.caches.item, expected.item)
 
+    def test_django13_logging_config(self):
+        schema = schemas.get('1.3')
+        section = Section(name='django')
+        expected = StringOption(name='logging_config', null=True,
+            default='django.utils.log.dictConfig',
+            help='The callable to use to configure logging')
+        expected.section = section
+        self.assertEqual(schema.django.logging_config, expected)
+
+    def test_django13_null_logging_config(self):
+        config = StringIO(textwrap.dedent("""
+            [django]
+            logging_config = None
+            """))
+
+        schema = schemas.get('1.3')
+        parser = SchemaConfigParser(schema())
+        parser.readfp(config)
+        value = parser.values()['django']['logging_config']
+        self.assertEqual(value, None)
+
+    def test_django13_custom_logging_config(self):
+        config = StringIO(textwrap.dedent("""
+            [django]
+            logging_config = foo
+            """))
+
+        schema = schemas.get('1.3')
+        parser = SchemaConfigParser(schema())
+        parser.readfp(config)
+        value = parser.values()['django']['logging_config']
+        self.assertEqual(value, 'foo')
+
+    def test_django13_logging_default(self):
+        expected = {
+            'version': 1,
+            'handlers': {
+                'mail_admins': {
+                    'class': 'django.utils.log.AdminEmailHandler',
+                    'level': 'ERROR'}},
+            'loggers': {
+                'django.request': {
+                    'handlers': ['mail_admins'],
+                    'level': 'ERROR',
+                    'propagate': True}},
+            'disable_existing_loggers': False,
+        }
+
+        schema = schemas.get('1.3')
+        self.assertEqual(schema().django.logging.default, expected)
+
 
 class GlueManagementUtilityTestCase(ConfigGlueDjangoCommandTestCase):
     def setUp(self):
