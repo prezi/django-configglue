@@ -1108,6 +1108,23 @@ class Django13Schema(Django13Base):
                  "Examples: 'http://foo.com/media/', '/media/'")
 
 
+class Django131Schema(Django13Schema):
+    version = '1.3.1'
+
+    # sections
+    class django(Django13Schema.django):
+
+        ################
+        # CORE         #
+        ################
+
+        use_x_forwarded_host = BoolOption(default=False,
+            help="A boolean that specifies whether to use the "
+                 "X-Forwarded-Host header in preference to the Host header. "
+                 "This should only be enabled if a proxy which sets this "
+                 "header is in use.")
+
+
 class DjangoSchemaFactory(object):
     def __init__(self):
         self._schemas = {}
@@ -1215,3 +1232,4 @@ schemas.register(Django112Schema)
 schemas.register(Django112Schema, '1.1.4')
 schemas.register(Django125Schema)
 schemas.register(Django13Schema)
+schemas.register(Django131Schema)
