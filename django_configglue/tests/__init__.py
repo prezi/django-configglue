@@ -4,3 +4,4 @@
 # import all test modules to conform to Django requirements
 from test_configglue import *
 from test_settings import *
+from test_schema import *

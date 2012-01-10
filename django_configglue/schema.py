@@ -91,7 +91,7 @@ class BaseDjangoSchema(Schema):
             help="Tuple of IP addresses, as strings, that see debug comments, "
                  "when DEBUG is true and receive x-headers")
 
-        time_zone = StringOption(default='America/Chicago',
+        time_zone = StringOption(default='America/Chicago', null=True,
             help="Local time zone for this installation. All choices can be "
                  "found here: "
                  "http://en.wikipedia.org/wiki/List_of_tz_zones_by_name "
