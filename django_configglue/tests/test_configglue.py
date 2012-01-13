@@ -5,6 +5,7 @@
 import inspect
 import textwrap
 from cStringIO import StringIO
+from optparse import BadOptionError
 from unittest import TestCase
 
 import django
@@ -27,7 +28,7 @@ from django.conf import global_settings
 from django.conf.project_template import settings as project_settings
 from mock import patch
 
-from django_configglue.management import GlueManagementUtility
+from django_configglue.management import GlueManagementUtility, LaxOptionParser
 from django_configglue.utils import (
     SETTINGS_ENCODING,
     configglue,
@@ -406,6 +407,15 @@ class GlueManagementUtilityTestCase(ConfigGlueDjangoCommandTestCase):
         self.util.argv = ['', '--django_debug=False', 'help', 'settings']
         self.execute()
         self.assertTrue('Show settings attributes' in self.capture['stdout'])
+
+
+class LaxOptionParserTestCase(TestCase):
+
+    def test_explicit_value_for_unknown_option(self):
+        parser = LaxOptionParser()
+        rargs = ["--foo=bar"]
+        self.assertRaises(BadOptionError, parser._process_long_opt, rargs, [])
+        self.assertEqual([], rargs)
 
 
 class UpperCaseDictOptionTestCase(TestCase):
