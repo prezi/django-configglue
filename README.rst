@@ -1,3 +1,12 @@
+Overview
+========
+
+*consider this a fork of https://code.launchpad.net/django-configglue*
+*this git repo has been converted from bzr, using the ``tailor`` tool - http://progetti.arstecnica.it/tailor - please excuse any apparent mishaps as a result, we'll clean up in time.*
+
+django-configglue brings all the joy of ConfigGlue - http://configglue.readthedocs.org/en/latest/index.html - to your django project.
+
+
 Running tests
 =============
 
@@ -20,3 +29,9 @@ Getting started
 
 For documentation on django-configglue, please refer to the files found under
 the ``doc`` folder.
+
+
+Support
+=======
+
+Feel free to submit bug reports, suggestions, etc as tickets in github: https://github.com/IDCubed/django-configglue/issues
