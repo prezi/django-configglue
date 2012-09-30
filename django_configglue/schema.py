@@ -1,5 +1,74 @@
-# Copyright 2010-2011 Canonical Ltd.  This software is licensed under the
-# GNU Lesser General Public License version 3 (see the file LICENSE).
+'''
+Copyright 2010-2011 Canonical Ltd.  This software is licensed under the
+GNU Lesser General Public License version 3 (see the file LICENSE).
+
+
+to add a schema for a new version of django:
+
+ * first, identify any settings added or removed since the last release. there
+   are a few ways to do this. it helps to review release info available [1] and
+   [2], identifying release dates, and any potential notes RE settings changes.
+   This [3] is the global settings file, all settings are defined here, it also
+   helps to look at the history [4] of this file - be sure to look at the
+   specific patches to confirm additions/deletions.
+
+ * create a new base class using ``derivate_django_schema()``. derivate from the
+   DjangoFooSchema associated with the last release. create a new base class for
+   major releases (1.4, 1.5, etc), regardless of any changes made to the global
+   settings in that release, and/or for any minor releases (1.3.1, 1.4.1, etc)
+   in which at least one setting was removed (you do not need a new base class
+   for a minor release that only includes additional settings).
+
+   eg:
+
+       Django14Base = derivate_django_schema(Django131Schema, exclude=None)
+   
+   if any settings were removed in the new release, reference the setting name
+   in a list passed in with the exclude parameter. eg:
+
+       Django13Base = derivate_django_schema(Django125Schema,
+                                             exclude=['cache_backend'])
+
+
+   if a minor release _only_ includes new settings, a new base class is not
+   needed, subclassing will do. eg:
+
+       class Django125Schema(Django112Schema)
+
+ * create a new Schema class for the new release, subclassing the previous
+   release's schema. set ``version`` to the specific django release and create a
+   new section for django subclassing the django section in the corresponding
+   schema class. this is the place to define the new settings added in the new
+   release. follow the same commentary style seen in the core Django Schema, and
+   be sure to copy the help text from [4] verbatim. eg:
+
+       class Django131Schema(Django13Schema):
+           version = '1.3.1'
+       
+           # sections
+           class django(Django13Schema.django):
+       
+               ################
+               # CORE         #
+               ################
+       
+               use_x_forwarded_host = BoolOption(default=False,
+                   help="A boolean that specifies whether to use the "
+                        "X-Forwarded-Host header in preference to the Host header. "
+                        "This should only be enabled if a proxy which sets this "
+                        "header is in use.")
+
+ * register the new DjangoFooSchema!
+
+       schemas.register(Django141Schema)
+
+
+[1] - django releases / release notes
+[2] https://github.com/django/django/tags
+[3] https://github.com/django/django/blob/master/django/conf/global_settings.py
+[4] https://github.com/django/django/commits/master/django/conf/global_settings.py
+'''
+
 import inspect
 import logging
 
@@ -15,7 +84,7 @@ from configglue.schema import (
 )
 from django import get_version
 from django.conf import global_settings
-from django.conf.project_template import settings as project_settings
+from django_configglue import project_settings
 
 
 # As in django.conf.global_settings:
@@ -1125,6 +1194,23 @@ class Django131Schema(Django13Schema):
                  "header is in use.")
 
 
+Django14Base = derivate_django_schema(
+    Django131Schema, exclude=None)
+
+
+class Django141Schema(Django14Base):
+    version = '1.4.1'
+
+    # sections
+    class django(Django14Base.django):
+
+        ##################
+        # AUTHENTICATION #
+        ##################
+
+        auth_user_model = StringOption(default='auth.User')
+
+
 class DjangoSchemaFactory(object):
     def __init__(self):
         self._schemas = {}
@@ -1160,12 +1246,6 @@ class DjangoSchemaFactory(object):
                 inspect.getmembers(global_settings) if name.isupper()])
             project_options = dict([(name.lower(), value) for (name, value) in
                 inspect.getmembers(project_settings) if name.isupper()])
-            # handle special case of ROOT_URLCONF which depends on the
-            # project name
-            root_urlconf = project_options['root_urlconf'].replace(
-                '{{ project_name }}.', '')
-            project_options['root_urlconf'] = root_urlconf
-
             options.update(project_options)
 
         class DjangoSchema(Schema):
@@ -1225,6 +1305,7 @@ class DjangoSchemaFactory(object):
         return DjangoSchema
 
 
+# register configuration schemas available in django-configglue
 schemas = DjangoSchemaFactory()
 schemas.register(BaseDjangoSchema, '1.0.2 final')
 schemas.register(BaseDjangoSchema, '1.0.4')
@@ -1233,3 +1314,4 @@ schemas.register(Django112Schema, '1.1.4')
 schemas.register(Django125Schema)
 schemas.register(Django13Schema)
 schemas.register(Django131Schema)
+schemas.register(Django141Schema)
