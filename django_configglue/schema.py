@@ -22,7 +22,7 @@ to add a schema for a new version of django:
    eg:
 
        Django14Base = derivate_django_schema(Django131Schema, exclude=None)
-   
+
    if any settings were removed in the new release, reference the setting name
    in a list passed in with the exclude parameter. eg:
 
@@ -44,14 +44,14 @@ to add a schema for a new version of django:
 
        class Django131Schema(Django13Schema):
            version = '1.3.1'
-       
+
            # sections
            class django(Django13Schema.django):
-       
+
                ################
                # CORE         #
                ################
-       
+
                use_x_forwarded_host = BoolOption(default=False,
                    help="A boolean that specifies whether to use the "
                         "X-Forwarded-Host header in preference to the Host header. "
@@ -1210,6 +1210,8 @@ class Django141Schema(Django14Base):
 
         auth_user_model = StringOption(default='auth.User')
 
+class Django143Schema(Django141Schema):
+    version = '1.4.3'
 
 class DjangoSchemaFactory(object):
     def __init__(self):
@@ -1315,3 +1317,4 @@ schemas.register(Django125Schema)
 schemas.register(Django13Schema)
 schemas.register(Django131Schema)
 schemas.register(Django141Schema)
+schemas.register(Django143Schema)
