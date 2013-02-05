@@ -1210,6 +1210,8 @@ class Django141Schema(Django14Base):
 
         auth_user_model = StringOption(default='auth.User')
 
+        admin_media_prefix = None
+
 class Django143Schema(Django141Schema):
     version = '1.4.3'
 
