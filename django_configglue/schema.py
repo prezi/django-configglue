@@ -1212,6 +1212,9 @@ class Django141Schema(Django14Base):
 
         admin_media_prefix = None
 
+        # Timezone support
+        use_tz = BoolOption(default=False)
+
 class Django143Schema(Django141Schema):
     version = '1.4.3'
 
