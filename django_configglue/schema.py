@@ -1215,6 +1215,14 @@ class Django141Schema(Django14Base):
         # Timezone support
         use_tz = BoolOption(default=False)
 
+        secure_proxy_ssl_header = TupleOption(
+            length=2,
+            default=None,
+            help="A tuple representing a HTTP header/value combination "
+                 "that signifies a request is secure. This controls the "
+                 "behavior of the request object's is_secure() method.")
+
+
 class Django143Schema(Django141Schema):
     version = '1.4.3'
 
