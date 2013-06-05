@@ -545,6 +545,7 @@ class BaseDjangoSchema(Schema):
         login_redirect_url = StringOption(default='/accounts/profile/')
         password_reset_timeout_days = IntOption(default=3,
             help="The number of days a password reset link is valid for")
+        password_hashers = ListOption(default=global_settings.PASSWORD_HASHERS)
 
         ###########
         # TESTING #
