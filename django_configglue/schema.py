@@ -1230,6 +1230,9 @@ class Django143Schema(Django141Schema):
 class Django145Schema(Django143Schema):
     version = '1.4.5'
 
+class Django154Schema(Django145Schema):
+    version = '1.5.4'
+
 class DjangoSchemaFactory(object):
     def __init__(self):
         self._schemas = {}
@@ -1336,3 +1339,4 @@ schemas.register(Django131Schema)
 schemas.register(Django141Schema)
 schemas.register(Django143Schema)
 schemas.register(Django145Schema)
+schemas.register(Django154Schema)
