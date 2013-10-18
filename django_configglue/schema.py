@@ -1232,13 +1232,13 @@ class Django145Schema(Django143Schema):
 
 class Django154Schema(Django145Schema):
     version = '1.5.4'
-    class django(Django14Base.django):
+    class django(Django145Schema.django):
         allowed_hosts = ListOption(
             item=StringOption(),
             help="A list of strings representing the host/domain names that this Django site can serve. This is a security measure to prevent an attacker from poisoning caches and password reset emails with links to malicious hosts by submitting requests with a fake HTTP Host header, which is possible even under many seemingly-safe webserver configurations.")
 
 
-    class DjangoSchemaFactory(object):
+class DjangoSchemaFactory(object):
     def __init__(self):
         self._schemas = {}
 
