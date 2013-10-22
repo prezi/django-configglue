@@ -1237,6 +1237,8 @@ class Django154Schema(Django145Schema):
             item=StringOption(),
             help="A list of strings representing the host/domain names that this Django site can serve. This is a security measure to prevent an attacker from poisoning caches and password reset emails with links to malicious hosts by submitting requests with a fake HTTP Host header, which is possible even under many seemingly-safe webserver configurations.")
 
+class Django16b1Schema(Django154Schema):
+    version = '1.6b1'
 
 class DjangoSchemaFactory(object):
     def __init__(self):
@@ -1345,3 +1347,4 @@ schemas.register(Django141Schema)
 schemas.register(Django143Schema)
 schemas.register(Django145Schema)
 schemas.register(Django154Schema)
+schemas.register(Django16b1Schema)
