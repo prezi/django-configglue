@@ -545,7 +545,6 @@ class BaseDjangoSchema(Schema):
         login_redirect_url = StringOption(default='/accounts/profile/')
         password_reset_timeout_days = IntOption(default=3,
             help="The number of days a password reset link is valid for")
-        password_hashers = ListOption(default=global_settings.PASSWORD_HASHERS)
 
         ###########
         # TESTING #
@@ -1195,26 +1194,68 @@ class Django131Schema(Django13Schema):
                  "header is in use.")
 
 
+class Django136Schema(Django13Schema):
+    version = '1.3.6'
+
+    class django(Django13Schema.django):
+
+        allowed_hosts = ListOption(
+            item=StringOption(),
+            help="A list of strings representing the host/domain names "
+                 "that this Django site can serve. This is a security "
+                 "measure to prevent an attacker from poisoning caches and "
+                 "password reset emails with links to malicious hosts by "
+                 "submitting requests with a fake HTTP Host header, which is "
+                 "possible even under many seemingly-safe webserver "
+                 "configurations.")
+
+
 Django14Base = derivate_django_schema(
-    Django131Schema, exclude=None)
+    Django13Schema,
+    exclude=[
+        'admin_media_prefix',
+        'ignorable_404_starts',
+        'ignorable_404_ends',
+        'banned_ips',
+        'comments_banned_users_group',
+        'comments_moderators_group',
+        'comments_sketchy_users_group',
+        'comments_first_few',
+        'database_engine',
+        'database_host',
+        'database_name',
+        'database_options',
+        'database_password',
+        'database_port',
+        'database_user',
+        'test_database_charset',
+        'test_database_collation',
+        'test_database_name',
+    ])
 
 
-class Django141Schema(Django14Base):
-    version = '1.4.1'
+class Django14Schema(Django14Base):
+    version = '1.4'
 
-    # sections
     class django(Django14Base.django):
 
-        ##################
-        # AUTHENTICATION #
-        ##################
+        wsgi_application = StringOption(
+            help="The full Python path of the WSGI application object"
+                 "that Django's built-in servers (e.g. runserver) will use.",
+            null=True)
 
-        auth_user_model = StringOption(default='auth.User')
+        csrf_cookie_secure = BoolOption(
+            default=False,
+            help='Whether to use a secure cookie for the CSRF '
+                 'cookie. If this is set to True, the cookie will be marked '
+                 'as "secure," which means browsers may ensure that the '
+                 'cookie is only sent under an HTTPS connection.')
 
-        admin_media_prefix = None
-
-        # Timezone support
-        use_tz = BoolOption(default=False)
+        csrf_cookie_path = StringOption(
+            default='/',
+            help="The path set on the CSRF cookie. This should either "
+                 "match the URL path of your Django installation or be a "
+                 "parent of that path.")
 
         secure_proxy_ssl_header = TupleOption(
             length=2,
@@ -1223,22 +1264,540 @@ class Django141Schema(Django14Base):
                  "that signifies a request is secure. This controls the "
                  "behavior of the request object's is_secure() method.")
 
+        ignorable_404_urls = ListOption(
+            item=StringOption(),
+            help="List of compiled regular expression objects "
+                 "describing URLs that should be ignored when reporting HTTP "
+                 "404 errors via email (see Error reporting). Use this if "
+                 "your site does not provide a commonly requested file such "
+                 "as favicon.ico or robots.txt, or if it gets hammered by "
+                 "script kiddies.")
 
-class Django143Schema(Django141Schema):
-    version = '1.4.3'
+        password_hashers = ListOption(
+            item=StringOption(),
+            help="This is a list of hashing algorithm classes that this "
+                 "Django installation supports. The first entry in this list "
+                 "(that is, settings.PASSWORD_HASHERS[0]) will be used to "
+                 "store passwords, and all the other entries are valid "
+                 "hashers that can be used to check existing passwords.",
+            default=[
+                'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+                'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+                'django.contrib.auth.hashers.BCryptPasswordHasher',
+                'django.contrib.auth.hashers.SHA1PasswordHasher',
+                'django.contrib.auth.hashers.MD5PasswordHasher',
+                'django.contrib.auth.hashers.UnsaltedMD5PasswordHasher',
+                'django.contrib.auth.hashers.CryptPasswordHasher',
+                ]
+            )
 
-class Django145Schema(Django143Schema):
+        x_frame_options = StringOption(
+            default='SAMEORIGIN',
+            help="The default value for the X-Frame-Options header used "
+                 "by XFrameOptionsMiddleware.")
+
+        use_tz = BoolOption(
+            default=True,
+            help="A boolean that specifies if datetimes will be timezone-aware"
+                 " by default or not. If this is set to True, Django will use "
+                 "timezone-aware datetimes internally. Otherwise, Django will "
+                 "use naive datetimes in local time.")
+
+        default_exception_reporter_filter = StringOption(
+            default='django.views.debug.SafeExceptionReporterFilter',
+            help="Default exception reporter filter class to be used if none "
+                 "has been assigned to the HttpRequest instance yet.")
+
+        signing_backend = StringOption(
+            default='django.core.signing.TimestampSigner',
+            help="The backend used for signing cookies and other data.")
+
+        url_validator_user_agent = StringOption(
+            default=("Django/%s (https://www.djangoproject.com)" %
+                     get_version()),
+            help="The User-Agent string to use when checking for URL validity "
+                 "through the isExistingURL validator")
+
+        message_storage = StringOption(
+            default='django.contrib.messages.storage.fallback.'
+                'FallbackStorage',
+            help="Class to be used as messages backend")
+
+        logging = DictOption(
+            spec={
+                'version': IntOption(default=1),
+                'formatters': DictOption(
+                    item=DictOption(
+                        spec={
+                            'format': StringOption(null=True),
+                            'datefmt': StringOption(null=True)})),
+                'filters': DictOption(
+                    item=DictOption(
+                        spec={'name': StringOption()})),
+                'handlers': DictOption(
+                    item=DictOption(
+                        spec={
+                            'class': StringOption(fatal=True),
+                            'level': StringOption(),
+                            'formatter': StringOption(),
+                            'filters': StringOption()})),
+                'loggers': DictOption(
+                    item=DictOption(
+                        spec={
+                            'level': StringOption(),
+                            'propagate': BoolOption(),
+                            'filters': ListOption(item=StringOption()),
+                            'handlers': ListOption(item=StringOption()),
+                            })),
+                'root': DictOption(
+                    spec={
+                        'level': StringOption(),
+                        'filters': ListOption(item=StringOption()),
+                        'handlers': ListOption(item=StringOption()),
+                        }),
+                'incremental': BoolOption(default=False),
+                'disable_existing_loggers': BoolOption(default=False),
+            },
+            default={
+                'version': 1,
+                'disable_existing_loggers': False,
+                'filters': {
+                    'require_debug_false': {
+                        '()': 'django.utils.log.RequireDebugFalse',
+                    }
+                },
+                'handlers': {
+                    'mail_admins': {
+                       'level': 'ERROR',
+                       'filters': ['require_debug_false'],
+                       'class': 'django.utils.log.AdminEmailHandler'
+                    }
+                },
+                'loggers': {
+                    'django.request': {
+                        'handlers': ['mail_admins'],
+                        'level': 'ERROR',
+                        'propagate': True,
+                    },
+                }
+            },
+            help="The default logging configuration. This sends an email to "
+                 "the site admins on every HTTP 500 error. All other records "
+                 "are sent to the bit bucket.")
+
+        template_context_processors = ListOption(
+            item=StringOption(),
+            default=['django.contrib.auth.context_processors.auth',
+                     'django.core.context_processors.debug',
+                     'django.core.context_processors.i18n',
+                     'django.core.context_processors.media',
+                     'django.core.context_processors.static',
+                     'django.core.context_processors.tz',
+                     'django.contrib.messages.context_processors.messages',
+                     ],
+            help="List of processors used by RequestContext to populate the "
+                 "context. Each one should be a callable that takes the "
+                 "request object as its only parameter and returns a "
+                 "dictionary to add to the context")
+
+        languages = ListOption(
+            item=TupleOption(length=2),
+            default=[
+                ('ar', gettext_noop('Arabic')),
+                ('az', gettext_noop('Azerbaijani')),
+                ('bg', gettext_noop('Bulgarian')),
+                ('bn', gettext_noop('Bengali')),
+                ('bs', gettext_noop('Bosnian')),
+                ('ca', gettext_noop('Catalan')),
+                ('cs', gettext_noop('Czech')),
+                ('cy', gettext_noop('Welsh')),
+                ('da', gettext_noop('Danish')),
+                ('de', gettext_noop('German')),
+                ('el', gettext_noop('Greek')),
+                ('en', gettext_noop('English')),
+                ('en-gb', gettext_noop('British English')),
+                ('eo', gettext_noop('Esperanto')),
+                ('es', gettext_noop('Spanish')),
+                ('es-ar', gettext_noop('Argentinian Spanish')),
+                ('es-mx', gettext_noop('Mexican Spanish')),
+                ('es-ni', gettext_noop('Nicaraguan Spanish')),
+                ('et', gettext_noop('Estonian')),
+                ('eu', gettext_noop('Basque')),
+                ('fa', gettext_noop('Persian')),
+                ('fi', gettext_noop('Finnish')),
+                ('fr', gettext_noop('French')),
+                ('fy-nl', gettext_noop('Frisian')),
+                ('ga', gettext_noop('Irish')),
+                ('gl', gettext_noop('Galician')),
+                ('he', gettext_noop('Hebrew')),
+                ('hi', gettext_noop('Hindi')),
+                ('hr', gettext_noop('Croatian')),
+                ('hu', gettext_noop('Hungarian')),
+                ('id', gettext_noop('Indonesian')),
+                ('is', gettext_noop('Icelandic')),
+                ('it', gettext_noop('Italian')),
+                ('ja', gettext_noop('Japanese')),
+                ('ka', gettext_noop('Georgian')),
+                ('kk', gettext_noop('Kazakh')),
+                ('km', gettext_noop('Khmer')),
+                ('kn', gettext_noop('Kannada')),
+                ('ko', gettext_noop('Korean')),
+                ('lt', gettext_noop('Lithuanian')),
+                ('lv', gettext_noop('Latvian')),
+                ('mk', gettext_noop('Macedonian')),
+                ('ml', gettext_noop('Malayalam')),
+                ('mn', gettext_noop('Mongolian')),
+                ('nb', gettext_noop('Norwegian Bokmal')),
+                ('ne', gettext_noop('Nepali')),
+                ('nl', gettext_noop('Dutch')),
+                ('nn', gettext_noop('Norwegian Nynorsk')),
+                ('pa', gettext_noop('Punjabi')),
+                ('pl', gettext_noop('Polish')),
+                ('pt', gettext_noop('Portuguese')),
+                ('pt-br', gettext_noop('Brazilian Portuguese')),
+                ('ro', gettext_noop('Romanian')),
+                ('ru', gettext_noop('Russian')),
+                ('sk', gettext_noop('Slovak')),
+                ('sl', gettext_noop('Slovenian')),
+                ('sq', gettext_noop('Albanian')),
+                ('sr', gettext_noop('Serbian')),
+                ('sr-latn', gettext_noop('Serbian Latin')),
+                ('sv', gettext_noop('Swedish')),
+                ('sw', gettext_noop('Swahili')),
+                ('ta', gettext_noop('Tamil')),
+                ('te', gettext_noop('Telugu')),
+                ('th', gettext_noop('Thai')),
+                ('tr', gettext_noop('Turkish')),
+                ('tt', gettext_noop('Tatar')),
+                ('uk', gettext_noop('Ukrainian')),
+                ('ur', gettext_noop('Urdu')),
+                ('vi', gettext_noop('Vietnamese')),
+                ('zh-cn', gettext_noop('Simplified Chinese')),
+                ('zh-tw', gettext_noop('Traditional Chinese'))],
+            help="Languages we provide translations for, out of the box. "
+                 "The language name should be the utf-8 encoded local name "
+                 "for the language")
+
+        session_cookie_httponly = BoolOption(
+            default=True,
+            help="Whether to use the non-RFC standard htt pOnly flag (IE, "
+                 "FF3+, others)")
+
+        datetime_input_formats = ListOption(
+            item=StringOption(),
+            default=[
+                '%Y-%m-%d %H:%M:%S',     # '2006-10-25 14:30:59'
+                '%Y-%m-%d %H:%M:%S.%f',  # '2006-10-25 14:30:59.000200'
+                '%Y-%m-%d %H:%M',        # '2006-10-25 14:30'
+                '%Y-%m-%d',              # '2006-10-25'
+                '%m/%d/%Y %H:%M:%S',     # '10/25/2006 14:30:59'
+                '%m/%d/%Y %H:%M:%S.%f',  # '10/25/2006 14:30:59.000200'
+                '%m/%d/%Y %H:%M',        # '10/25/2006 14:30'
+                '%m/%d/%Y',              # '10/25/2006'
+                '%m/%d/%y %H:%M:%S',     # '10/25/06 14:30:59'
+                '%m/%d/%y %H:%M:%S.%f',  # '10/25/06 14:30:59.000200'
+                '%m/%d/%y %H:%M',        # '10/25/06 14:30'
+                '%m/%d/%y',              # '10/25/06'
+            ],
+            help="Default formats to be used when parsing dates and times "
+                "from input boxes, in order")
+
+
+class Django144Schema(Django14Schema):
+    version = '1.4.4'
+
+    class django(Django14Schema.django):
+
+        allowed_hosts = ListOption(
+            help="A list of strings representing the host/domain names "
+                 "that this Django site can serve. This is a security "
+                 "measure to prevent an attacker from poisoning caches and "
+                 "password reset emails with links to malicious hosts by "
+                 "submitting requests with a fake HTTP Host header, which is "
+                 "possible even under many seemingly-safe webserver "
+                 "configurations.")
+
+        languages = ListOption(
+            item=TupleOption(length=2),
+            default=[
+                ('af', gettext_noop('Afrikaans')),
+                ('ar', gettext_noop('Arabic')),
+                ('az', gettext_noop('Azerbaijani')),
+                ('bg', gettext_noop('Bulgarian')),
+                ('be', gettext_noop('Belarusian')),
+                ('bn', gettext_noop('Bengali')),
+                ('br', gettext_noop('Breton')),
+                ('bs', gettext_noop('Bosnian')),
+                ('ca', gettext_noop('Catalan')),
+                ('cs', gettext_noop('Czech')),
+                ('cy', gettext_noop('Welsh')),
+                ('da', gettext_noop('Danish')),
+                ('de', gettext_noop('German')),
+                ('el', gettext_noop('Greek')),
+                ('en', gettext_noop('English')),
+                ('en-gb', gettext_noop('British English')),
+                ('eo', gettext_noop('Esperanto')),
+                ('es', gettext_noop('Spanish')),
+                ('es-ar', gettext_noop('Argentinian Spanish')),
+                ('es-mx', gettext_noop('Mexican Spanish')),
+                ('es-ni', gettext_noop('Nicaraguan Spanish')),
+                ('es-ve', gettext_noop('Venezuelan Spanish')),
+                ('et', gettext_noop('Estonian')),
+                ('eu', gettext_noop('Basque')),
+                ('fa', gettext_noop('Persian')),
+                ('fi', gettext_noop('Finnish')),
+                ('fr', gettext_noop('French')),
+                ('fy-nl', gettext_noop('Frisian')),
+                ('ga', gettext_noop('Irish')),
+                ('gl', gettext_noop('Galician')),
+                ('he', gettext_noop('Hebrew')),
+                ('hi', gettext_noop('Hindi')),
+                ('hr', gettext_noop('Croatian')),
+                ('hu', gettext_noop('Hungarian')),
+                ('ia', gettext_noop('Interlingua')),
+                ('id', gettext_noop('Indonesian')),
+                ('is', gettext_noop('Icelandic')),
+                ('it', gettext_noop('Italian')),
+                ('ja', gettext_noop('Japanese')),
+                ('ka', gettext_noop('Georgian')),
+                ('kk', gettext_noop('Kazakh')),
+                ('km', gettext_noop('Khmer')),
+                ('kn', gettext_noop('Kannada')),
+                ('ko', gettext_noop('Korean')),
+                ('lb', gettext_noop('Luxembourgish')),
+                ('lt', gettext_noop('Lithuanian')),
+                ('lv', gettext_noop('Latvian')),
+                ('mk', gettext_noop('Macedonian')),
+                ('ml', gettext_noop('Malayalam')),
+                ('mn', gettext_noop('Mongolian')),
+                ('nb', gettext_noop('Norwegian Bokmal')),
+                ('ne', gettext_noop('Nepali')),
+                ('nl', gettext_noop('Dutch')),
+                ('nn', gettext_noop('Norwegian Nynorsk')),
+                ('pa', gettext_noop('Punjabi')),
+                ('pl', gettext_noop('Polish')),
+                ('pt', gettext_noop('Portuguese')),
+                ('pt-br', gettext_noop('Brazilian Portuguese')),
+                ('ro', gettext_noop('Romanian')),
+                ('ru', gettext_noop('Russian')),
+                ('sk', gettext_noop('Slovak')),
+                ('sl', gettext_noop('Slovenian')),
+                ('sq', gettext_noop('Albanian')),
+                ('sr', gettext_noop('Serbian')),
+                ('sr-latn', gettext_noop('Serbian Latin')),
+                ('sv', gettext_noop('Swedish')),
+                ('sw', gettext_noop('Swahili')),
+                ('ta', gettext_noop('Tamil')),
+                ('te', gettext_noop('Telugu')),
+                ('th', gettext_noop('Thai')),
+                ('tr', gettext_noop('Turkish')),
+                ('tt', gettext_noop('Tatar')),
+                ('udm', gettext_noop('Udmurt')),
+                ('uk', gettext_noop('Ukrainian')),
+                ('ur', gettext_noop('Urdu')),
+                ('vi', gettext_noop('Vietnamese')),
+                ('zh-cn', gettext_noop('Simplified Chinese')),
+                ('zh-tw', gettext_noop('Traditional Chinese')),],
+            help="Languages we provide translations for, out of the box. "
+                 "The language name should be the utf-8 encoded local name "
+                 "for the language")
+
+
+class Django145Schema(Django144Schema):
     version = '1.4.5'
 
-class Django154Schema(Django145Schema):
-    version = '1.5.4'
-    class django(Django145Schema.django):
-        allowed_hosts = ListOption(
-            item=StringOption(),
-            help="A list of strings representing the host/domain names that this Django site can serve. This is a security measure to prevent an attacker from poisoning caches and password reset emails with links to malicious hosts by submitting requests with a fake HTTP Host header, which is possible even under many seemingly-safe webserver configurations.")
+    class django(Django144Schema.django):
+        languages = ListOption(
+            item=TupleOption(length=2),
+            default=[
+                ('ar', gettext_noop('Arabic')),
+                ('az', gettext_noop('Azerbaijani')),
+                ('bg', gettext_noop('Bulgarian')),
+                ('bn', gettext_noop('Bengali')),
+                ('bs', gettext_noop('Bosnian')),
+                ('ca', gettext_noop('Catalan')),
+                ('cs', gettext_noop('Czech')),
+                ('cy', gettext_noop('Welsh')),
+                ('da', gettext_noop('Danish')),
+                ('de', gettext_noop('German')),
+                ('el', gettext_noop('Greek')),
+                ('en', gettext_noop('English')),
+                ('en-gb', gettext_noop('British English')),
+                ('eo', gettext_noop('Esperanto')),
+                ('es', gettext_noop('Spanish')),
+                ('es-ar', gettext_noop('Argentinian Spanish')),
+                ('es-mx', gettext_noop('Mexican Spanish')),
+                ('es-ni', gettext_noop('Nicaraguan Spanish')),
+                ('et', gettext_noop('Estonian')),
+                ('eu', gettext_noop('Basque')),
+                ('fa', gettext_noop('Persian')),
+                ('fi', gettext_noop('Finnish')),
+                ('fr', gettext_noop('French')),
+                ('fy-nl', gettext_noop('Frisian')),
+                ('ga', gettext_noop('Irish')),
+                ('gl', gettext_noop('Galician')),
+                ('he', gettext_noop('Hebrew')),
+                ('hi', gettext_noop('Hindi')),
+                ('hr', gettext_noop('Croatian')),
+                ('hu', gettext_noop('Hungarian')),
+                ('id', gettext_noop('Indonesian')),
+                ('is', gettext_noop('Icelandic')),
+                ('it', gettext_noop('Italian')),
+                ('ja', gettext_noop('Japanese')),
+                ('ka', gettext_noop('Georgian')),
+                ('kk', gettext_noop('Kazakh')),
+                ('km', gettext_noop('Khmer')),
+                ('kn', gettext_noop('Kannada')),
+                ('ko', gettext_noop('Korean')),
+                ('lt', gettext_noop('Lithuanian')),
+                ('lv', gettext_noop('Latvian')),
+                ('mk', gettext_noop('Macedonian')),
+                ('ml', gettext_noop('Malayalam')),
+                ('mn', gettext_noop('Mongolian')),
+                ('nb', gettext_noop('Norwegian Bokmal')),
+                ('ne', gettext_noop('Nepali')),
+                ('nl', gettext_noop('Dutch')),
+                ('nn', gettext_noop('Norwegian Nynorsk')),
+                ('pa', gettext_noop('Punjabi')),
+                ('pl', gettext_noop('Polish')),
+                ('pt', gettext_noop('Portuguese')),
+                ('pt-br', gettext_noop('Brazilian Portuguese')),
+                ('ro', gettext_noop('Romanian')),
+                ('ru', gettext_noop('Russian')),
+                ('sk', gettext_noop('Slovak')),
+                ('sl', gettext_noop('Slovenian')),
+                ('sq', gettext_noop('Albanian')),
+                ('sr', gettext_noop('Serbian')),
+                ('sr-latn', gettext_noop('Serbian Latin')),
+                ('sv', gettext_noop('Swedish')),
+                ('sw', gettext_noop('Swahili')),
+                ('ta', gettext_noop('Tamil')),
+                ('te', gettext_noop('Telugu')),
+                ('th', gettext_noop('Thai')),
+                ('tr', gettext_noop('Turkish')),
+                ('tt', gettext_noop('Tatar')),
+                ('uk', gettext_noop('Ukrainian')),
+                ('ur', gettext_noop('Urdu')),
+                ('vi', gettext_noop('Vietnamese')),
+                ('zh-cn', gettext_noop('Simplified Chinese')),
+                ('zh-tw', gettext_noop('Traditional Chinese')),],
+            help="Languages we provide translations for, out of the box. "
+                 "The language name should be the utf-8 encoded local name "
+                 "for the language")
 
-class Django16b1Schema(Django154Schema):
-    version = '1.6b1'
+
+Django15Base = derivate_django_schema(
+    Django145Schema,
+    exclude=[
+        'url_validator_user_agent',
+    ])
+
+
+class Django15Schema(Django15Base):
+    version = '1.5'
+
+    class django(Django15Base.django):
+
+        caches = DictOption(
+            item=UpperCaseDictOption(
+                spec={
+                    'backend': StringOption(),
+                    'location': StringOption()
+                }),
+            default={
+               'default': {
+                   'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+               }
+            })
+
+        auth_user_model = StringOption(
+            default='auth.User',
+            help="The model to use to represent a User.")
+
+        session_cache_alias = StringOption(
+            default='default',
+            help="If you're using cache-based session storage, this selects "
+                 " the cache to use.")
+
+        password_hashers = ListOption(
+            item=StringOption(),
+            help="This is a list of hashing algorithm classes that this "
+                 "Django installation supports. The first entry in this list "
+                 "(that is, settings.PASSWORD_HASHERS[0]) will be used to "
+                 "store passwords, and all the other entries are valid "
+                 "hashers that can be used to check existing passwords.",
+            default=[
+                'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+                'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+                'django.contrib.auth.hashers.BCryptPasswordHasher',
+                'django.contrib.auth.hashers.SHA1PasswordHasher',
+                'django.contrib.auth.hashers.MD5PasswordHasher',
+                'django.contrib.auth.hashers.UnsaltedSHA1PasswordHasher',
+                'django.contrib.auth.hashers.UnsaltedMD5PasswordHasher',
+                'django.contrib.auth.hashers.CryptPasswordHasher',
+                ])
+
+
+class Django153Schema(Django15Schema):
+    version = '1.5.3'
+
+    class django(Django15Schema.django):
+        # XXX: even though the Django documentation says PickleSerializer is
+        # the default value, it's not the case with a vanilla 1.5.3 project
+        session_serializer = StringOption(
+            default='django.contrib.sessions.serializers.JSONSerializer',
+            help="Full import path of a serializer class to use for "
+                 "serializing session data.")
+
+
+Django16Base = derivate_django_schema(
+    Django153Schema)
+
+
+class Django16Schema(Django16Base):
+    version = '1.6'
+
+    class django(Django16Base.django):
+
+        base_dir = StringOption(
+            help="Used by the example project to help build paths for other "
+                 "settings variables.")
+
+        databases = DictOption(
+            item=UpperCaseDictOption(spec={
+                'engine': StringOption(default='django.db.backends.'),
+                'name': StringOption(),
+                'user': StringOption(),
+                'password': StringOption(),
+                'host': StringOption(),
+                'port': StringOption(),
+                'atomic_requests': BoolOption(default=False),
+                'autocommit': BoolOption(default=True),
+                'conn_max_age': IntOption(default=0),
+            }),
+            default={
+                'default': {
+                    'ENGINE': 'django.db.backends.',
+                    'NAME': '',
+                    'USER': '',
+                    'PASSWORD': '',
+                    'HOST': '',
+                    'PORT': '',
+                }
+            })
+
+        csrf_cookie_httponly = BoolOption(
+            default=False,
+            help="Whether to use HttpOnly flag on the CSRF cookie. If this "
+                 "is set to True, client-side JavaScript will not to be able "
+                 "to access the CSRF cookie. See SESSION_COOKIE_HTTPONLY for "
+                 "details on HttpOnly.")
+
+        session_serializer = StringOption(
+            default='django.contrib.sessions.serializers.JSONSerializer',
+            help="Full import path of a serializer class to use for "
+                 "serializing session data.")
+
 
 class DjangoSchemaFactory(object):
     def __init__(self):
@@ -1343,8 +1902,27 @@ schemas.register(Django112Schema, '1.1.4')
 schemas.register(Django125Schema)
 schemas.register(Django13Schema)
 schemas.register(Django131Schema)
-schemas.register(Django141Schema)
-schemas.register(Django143Schema)
+schemas.register(Django131Schema, '1.3.2')
+schemas.register(Django131Schema, '1.3.3')
+schemas.register(Django131Schema, '1.3.4')
+schemas.register(Django131Schema, '1.3.5')
+schemas.register(Django136Schema)
+schemas.register(Django136Schema, '1.3.7')
+schemas.register(Django14Schema)
+schemas.register(Django14Schema, '1.4.1')
+schemas.register(Django14Schema, '1.4.2')
+schemas.register(Django14Schema, '1.4.3')
+schemas.register(Django144Schema)
 schemas.register(Django145Schema)
-schemas.register(Django154Schema)
-schemas.register(Django16b1Schema)
+schemas.register(Django145Schema, '1.4.6')
+schemas.register(Django145Schema, '1.4.7')
+schemas.register(Django145Schema, '1.4.8')
+schemas.register(Django145Schema, '1.4.9')
+schemas.register(Django145Schema, '1.4.10')
+schemas.register(Django15Schema)
+schemas.register(Django15Schema, '1.5.1')
+schemas.register(Django15Schema, '1.5.2')
+schemas.register(Django153Schema)
+schemas.register(Django153Schema, '1.5.4')
+schemas.register(Django153Schema, '1.5.5')
+schemas.register(Django16Schema)
