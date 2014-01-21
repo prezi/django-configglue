@@ -1297,7 +1297,7 @@ class Django14Schema(Django14Base):
                  "by XFrameOptionsMiddleware.")
 
         use_tz = BoolOption(
-            default=True,
+            default=False,
             help="A boolean that specifies if datetimes will be timezone-aware"
                  " by default or not. If this is set to True, Django will use "
                  "timezone-aware datetimes internally. Otherwise, Django will "
