@@ -1201,6 +1201,7 @@ class Django136Schema(Django13Schema):
 
         allowed_hosts = ListOption(
             item=StringOption(),
+            default=['*'],
             help="A list of strings representing the host/domain names "
                  "that this Django site can serve. This is a security "
                  "measure to prevent an attacker from poisoning caches and "
@@ -1509,6 +1510,8 @@ class Django144Schema(Django14Schema):
     class django(Django14Schema.django):
 
         allowed_hosts = ListOption(
+            item=StringOption(),
+            default=['*'],
             help="A list of strings representing the host/domain names "
                  "that this Django site can serve. This is a security "
                  "measure to prevent an attacker from poisoning caches and "
@@ -1697,6 +1700,16 @@ class Django15Schema(Django15Base):
     version = '1.5'
 
     class django(Django15Base.django):
+
+        allowed_hosts = ListOption(
+            item=StringOption(),
+            help="A list of strings representing the host/domain names "
+                 "that this Django site can serve. This is a security "
+                 "measure to prevent an attacker from poisoning caches and "
+                 "password reset emails with links to malicious hosts by "
+                 "submitting requests with a fake HTTP Host header, which is "
+                 "possible even under many seemingly-safe webserver "
+                 "configurations.")
 
         caches = DictOption(
             item=UpperCaseDictOption(
