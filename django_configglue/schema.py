@@ -82,10 +82,10 @@ from configglue.schema import (
     StringOption,
     TupleOption,
 )
-from django import get_version
+from django import get_version, VERSION
 from django.conf import global_settings
-from django_configglue import project_settings
 
+from django_configglue.utils import get_project_settings
 
 # As in django.conf.global_settings:
 # This is defined here as a do-nothing function because we can't import
@@ -131,7 +131,7 @@ def derivate_django_schema(schema, exclude=None):
 
 
 class BaseDjangoSchema(Schema):
-    version = '1.0.2 final'
+    version = '1.0'
 
     # Sections
     class django(Section):
@@ -1194,10 +1194,10 @@ class Django131Schema(Django13Schema):
                  "header is in use.")
 
 
-class Django136Schema(Django13Schema):
+class Django136Schema(Django131Schema):
     version = '1.3.6'
 
-    class django(Django13Schema.django):
+    class django(Django131Schema.django):
 
         allowed_hosts = ListOption(
             item=StringOption(),
@@ -1212,7 +1212,7 @@ class Django136Schema(Django13Schema):
 
 
 Django14Base = derivate_django_schema(
-    Django13Schema,
+    Django136Schema,
     exclude=[
         'admin_media_prefix',
         'ignorable_404_starts',
@@ -1830,6 +1830,7 @@ class DjangoSchemaFactory(object):
             return self._schemas[version]
 
         msg = "No schema registered for version %r" % version
+
         if strict:
             raise ValueError(msg)
         else:
@@ -1839,20 +1840,38 @@ class DjangoSchemaFactory(object):
         schema = self.build(version)
         return schema
 
-    def build(self, version_string=None, options=None):
+    def build(self, version_string=None, options=None,
+              BaseSchema=BaseDjangoSchema):
         if version_string is None:
             version_string = get_version()
+
         if options is None:
+            project_settings = get_project_settings()
+
             options = dict([(name.lower(), value) for (name, value) in
                 inspect.getmembers(global_settings) if name.isupper()])
             project_options = dict([(name.lower(), value) for (name, value) in
                 inspect.getmembers(project_settings) if name.isupper()])
+            # handle special case of ROOT_URLCONF which depends on the
+            # project name
+            root_urlconf = project_options['root_urlconf'].replace(
+                '{{ project_name }}.', '')
+            project_options['root_urlconf'] = root_urlconf
+
             options.update(project_options)
 
-        class DjangoSchema(Schema):
+        try:
+            base_version = '{0}.{1}'.format(*VERSION[:2])
+            BaseSchema = self.get(base_version)
+        except ValueError:
+            pass
+
+        section_base_class = getattr(BaseSchema, 'django', Section)
+
+        class DjangoSchema(BaseSchema):
             version = version_string
 
-            class django(Section):
+            class django(section_base_class):
                 pass
 
         def get_option_type(name, value):
@@ -1866,8 +1885,18 @@ class DjangoSchemaFactory(object):
                 unicode: StringOption,
             }
             if value is None:
+                # Special casing strange value, which by default is None but
+                # should be set to tuple.
+                if name == 'secure_proxy_ssl_header':
+                    return TupleOption(name=name, default=None)
+
                 return StringOption(name=name, default=value, null=True)
             else:
+                # Clean up values comming from the project template and having
+                # {{ }} substitutions in them.
+                if name in ('secret_key', 'wsgi_application'):
+                    value = ''
+
                 option_type = type_mappings[type(value)]
                 kwargs = {'name': name, 'default': value}
 
@@ -1898,8 +1927,9 @@ class DjangoSchemaFactory(object):
         for name, value in options.items():
             if name == '__CONFIGGLUE_PARSER__':
                 continue
-            option = get_option_type(name, value)
-            setattr(DjangoSchema.django, name, option)
+            if not hasattr(DjangoSchema.django, name):
+                option = get_option_type(name, value)
+                setattr(DjangoSchema.django, name, option)
 
         # register schema for it to be available during next query
         self.register(DjangoSchema, version_string)
@@ -1908,6 +1938,7 @@ class DjangoSchemaFactory(object):
 
 # register configuration schemas available in django-configglue
 schemas = DjangoSchemaFactory()
+schemas.register(BaseDjangoSchema)
 schemas.register(BaseDjangoSchema, '1.0.2 final')
 schemas.register(BaseDjangoSchema, '1.0.4')
 schemas.register(Django112Schema)

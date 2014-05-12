@@ -25,15 +25,15 @@ from configglue.parser import (
 )
 from django.conf import settings
 from django.conf import global_settings
-from django.conf.project_template import settings as project_settings
 from mock import patch
 
-from django_configglue.management import GlueManagementUtility, LaxOptionParser
+from django_configglue import management
 from django_configglue.utils import (
     SETTINGS_ENCODING,
     configglue,
     get_django_settings,
     update_settings,
+    get_project_settings,
 )
 from django_configglue.schema import (
     BaseDjangoSchema,
@@ -91,18 +91,20 @@ class DjangoSupportTestCase(SchemaHelperTestCase):
 
     def test_schemafactory_get(self):
         # test get valid version
-        self.assertEqual(schemas.get('1.0.2 final', strict=True),
-            BaseDjangoSchema)
+        self.assertEqual(
+            schemas.get('1.0', strict=True),
+            BaseDjangoSchema
+        )
 
         # test get invalid version
-        self.assertRaises(ValueError, schemas.get, '1.1', strict=True)
+        self.assertRaises(ValueError, schemas.get, '1.1.1', strict=True)
 
     def test_schema_versions(self):
-        django_102 = schemas.get('1.0.2 final')()
-        django_112 = schemas.get('1.1.2')()
-        self.assertEqual(django_102.version, '1.0.2 final')
-        self.assertEqual(django_112.version, '1.1.2')
-        self.assertFalse(django_102 is django_112)
+        django_13 = schemas.get('1.3')()
+        django_14 = schemas.get('1.4')()
+        self.assertEqual(django_13.version, '1.3')
+        self.assertEqual(django_14.version, '1.4')
+        self.assertFalse(django_13 is django_14)
 
     def test_register_without_version(self):
         class MySchema(Schema):
@@ -154,10 +156,10 @@ class DjangoSupportTestCase(SchemaHelperTestCase):
             (StringOption, 'foo'),
         ]
 
-        for opt_type, default in data:
-            schema_cls = schemas.build('bogus', {'foo': default})
+        for i, (opt_type, default) in enumerate(data):
+            schema_cls = schemas.build('bogus.%d' % i, {'foo': default}, Schema)
             # do common checks
-            self.assert_schema_structure(schema_cls, 'bogus',
+            self.assert_schema_structure(schema_cls, 'bogus.%d' % i,
                 {'foo': opt_type(name='foo', default=default)})
 
     def test_schemafactory_build_django(self):
@@ -229,7 +231,7 @@ class DjangoSupportTestCase(SchemaHelperTestCase):
         options = dict([(name.lower(), value) for (name, value) in
             inspect.getmembers(global_settings) if name.isupper()])
         project_options = dict([(name.lower(), value) for (name, value) in
-            inspect.getmembers(project_settings) if name.isupper()])
+            inspect.getmembers(get_project_settings()) if name.isupper()])
         # handle special case of ROOT_URLCONF which depends on the
         # project name
         root_urlconf = project_options['root_urlconf'].replace(
@@ -340,7 +342,7 @@ class GlueManagementUtilityTestCase(ConfigGlueDjangoCommandTestCase):
     def setUp(self):
         super(GlueManagementUtilityTestCase, self).setUp()
 
-        self.util = GlueManagementUtility()
+        self.util = management.GlueManagementUtility()
 
     def execute(self):
         self.begin_capture()
@@ -351,37 +353,52 @@ class GlueManagementUtilityTestCase(ConfigGlueDjangoCommandTestCase):
 
     def test_execute_no_args(self):
         self.util.argv = ['']
-        self.assertRaises(SystemExit, self.execute)
-        self.assertEqual(self.capture['stderr'],
-            "Type '%s help' for usage.\n" % self.util.prog_name)
+        try:
+            self.execute()
+        except SystemExit:
+            pass
+        self.assertTrue(
+            "Type '%s help <subcommand>' for help" % (self.util.prog_name,) in
+            self.output)
 
-    def test_execute_help(self):
+    @patch('sys.stdout')
+    def test_execute_help(self, mock_stdout):
+        mock_stdout.isatty.return_value = False
         self.util.argv = ['', 'help']
-        self.assertRaises(SystemExit, self.execute)
-        self.assertTrue(self.util.main_help_text() in self.capture['stderr'])
+        try:
+            self.execute()
+        except SystemExit:
+            # In earlier versions than 1.4, help was raising SystemExit
+            pass
+        self.assertTrue(self.util.main_help_text() in self.output)
 
-    def test_execute_help_option(self):
+    @patch('sys.stdout')
+    def test_execute_help_option(self, mock_stdout):
+        mock_stdout.isatty.return_value = False
         self.util.argv = ['', '--help']
         self.execute()
-        self.assertTrue(self.util.main_help_text() in self.capture['stderr'])
+        self.assertTrue(self.util.main_help_text() in self.output)
 
     def test_execute_help_for_command(self):
         self.util.argv = ['', 'help', 'settings']
         self.execute()
-        self.assertTrue('Show settings attributes' in self.capture['stdout'])
+        self.assertTrue('Show settings attributes' in self.output)
 
     def test_execute_version(self):
         from django import get_version
         self.util.argv = ['', '--version']
         self.execute()
-        self.assertTrue(get_version() in self.capture['stdout'])
+        self.assertTrue(get_version() in self.output)
 
     def test_execute(self):
         self.util.argv = ['', 'settings']
         self.execute()
-        self.assertTrue('Show settings attributes' in self.capture['stdout'])
+        self.assertTrue('Show settings attributes' in self.output)
 
-    def test_execute_settings_exception(self):
+    @patch('sys.stdout')
+    def test_execute_settings_exception(self, mock_stdout):
+        mock_stdout.isatty.return_value = False
+
         from django.conf import settings
         wrapped = getattr(settings, self.wrapped_settings)
         old_CONFIGGLUE_PARSER = wrapped.__CONFIGGLUE_PARSER__
@@ -389,30 +406,34 @@ class GlueManagementUtilityTestCase(ConfigGlueDjangoCommandTestCase):
 
         try:
             self.util.argv = ['', 'help']
-            self.assertRaises(SystemExit, self.execute)
+            try:
+                self.execute()
+            except SystemExit:
+                pass
             self.assertTrue(
-                self.util.main_help_text() in self.capture['stderr'])
+                self.util.main_help_text() in self.output)
         finally:
             wrapped.__CONFIGGLUE_PARSER__ = old_CONFIGGLUE_PARSER
-
-    @patch('django_configglue.utils.update_settings')
-    def test_execute_configglue_exception(self, mock_update_settings):
-        mock_update_settings.side_effect = Exception()
-
-        self.util.argv = ['', 'help']
-        self.assertRaises(SystemExit, self.execute)
-        self.assertTrue(self.util.main_help_text() in self.capture['stderr'])
 
     def test_execute_with_schema_options(self):
         self.util.argv = ['', '--django_debug=False', 'help', 'settings']
         self.execute()
-        self.assertTrue('Show settings attributes' in self.capture['stdout'])
+        self.assertTrue('Show settings attributes' in self.output)
+
+    def test_verbosity_is_preserved(self):
+        self.util.argv = ['', 'settings', '--verbosity=2']
+        handle_path = ('django_configglue.management.commands.settings.'
+                       'Command.handle')
+        with patch(handle_path) as mock_handle:
+            self.execute()
+            args, options = mock_handle.call_args
+            self.assertEqual('2', options['verbosity'])
 
 
 class LaxOptionParserTestCase(TestCase):
 
     def test_explicit_value_for_unknown_option(self):
-        parser = LaxOptionParser()
+        parser = management.LaxOptionParser()
         rargs = ["--foo=bar"]
         self.assertRaises(BadOptionError, parser._process_long_opt, rargs, [])
         self.assertEqual([], rargs)
@@ -435,3 +456,27 @@ class UpperCaseDictOptionTestCase(TestCase):
         result = schema.foo.parse('mydict', parser)
 
         self.assertEqual(result, {'BAR': '42'})
+
+
+class ManagementTestCase(TestCase):
+    def test_django_13_management_utility(self):
+        with patch.object(django, 'VERSION', (1, 3)):
+            # force reloading of module
+            reload(management)
+
+            self.assertEqual(management.management.ManagementUtility,
+                             management.GlueManagementUtility)
+
+    def test_django_14_management_utility(self):
+        with patch.object(django, 'VERSION', (1, 4)):
+            # force reloading of module
+            reload(management)
+
+            self.assertEqual(management.management.ManagementUtility,
+                             django.core.management.ManagementUtility)
+
+    def test_execute_from_command_line(self):
+        name = 'django_configglue.management.GlueManagementUtility'
+        with patch(name) as mock_utility:
+            management.execute_from_command_line()
+            mock_utility.assert_called_once_with(None)

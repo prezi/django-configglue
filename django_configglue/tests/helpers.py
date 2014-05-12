@@ -11,6 +11,10 @@ import django
 from django.core import management
 from django.conf import settings
 from django.test import TestCase
+try:
+    from django.utils.functional import empty
+except ImportError:
+    empty = None
 
 from configglue.schema import (
     ListOption,
@@ -23,30 +27,24 @@ class ConfigGlueDjangoCommandTestCase(TestCase):
     COMMAND = ''
 
     def setUp(self):
+        super(ConfigGlueDjangoCommandTestCase, self).setUp()
         # disable logging during tests
         self.level = logging.getLogger().level
         logging.disable(logging.ERROR)
 
         config = textwrap.dedent("""
             [django]
-            database_engine = sqlite3
-            database_name = :memory:
             installed_apps = django_configglue
             time_zone = Europe/London
+            databases = databases
+
+            [databases]
+            default = db_default
+
+            [db_default]
+            engine = django.db.backends.sqlite3
+            name = :memory:
         """)
-
-        if django.VERSION[:2] > (1, 1):
-            # since 1.2 use multi database settings format
-            config += textwrap.dedent("""
-                databases = databases
-
-                [databases]
-                default = db_default
-
-                [db_default]
-                engine = sqlite3
-                name = :memory:
-            """)
 
         self.set_config(config)
         self._DJANGO_SETTINGS_MODULE = self.load_settings()
@@ -60,6 +58,7 @@ class ConfigGlueDjangoCommandTestCase(TestCase):
                          self._DJANGO_SETTINGS_MODULE)
 
         os.remove('test.cfg')
+        super(ConfigGlueDjangoCommandTestCase, self).tearDown()
 
     def set_config(self, config):
         config_file = open('test.cfg', 'w')
@@ -68,14 +67,11 @@ class ConfigGlueDjangoCommandTestCase(TestCase):
 
     @property
     def wrapped_settings(self):
-        wrapped = '_target'
-        if django.VERSION[:3] > (1, 0, 2):
-            wrapped = '_wrapped'
         # make sure the wrapped object is not None
         # by just querying it for a setting
         getattr(settings, 'DEBUG', False)
-        assert(getattr(settings, wrapped) != None)
-        return wrapped
+        assert(getattr(settings, '_wrapped') is not empty)
+        return '_wrapped'
 
     def load_settings(self, module='django_configglue.tests.settings'):
         old_module = os.environ['DJANGO_SETTINGS_MODULE']
@@ -90,14 +86,20 @@ class ConfigGlueDjangoCommandTestCase(TestCase):
                 'DATABASE_SUPPORTS_TRANSACTIONS': getattr(
                     settings, 'DATABASE_SUPPORTS_TRANSACTIONS'),
             }
+        # save _original_allowed_hosts so that the teardown will work
+        # properly
+        _original_allowed_hosts = getattr(
+            settings, '_original_allowed_hosts', None)
         # force django to reload its settings
-        setattr(settings, self.wrapped_settings, None)
+        setattr(settings, self.wrapped_settings, empty)
         # update settings module for next reload
         os.environ['DJANGO_SETTINGS_MODULE'] = module
 
         # synch extra settings
         for key, value in extra_settings.items():
             setattr(settings, key, value)
+
+        settings._original_allowed_hosts = _original_allowed_hosts
 
         if hasattr(self, 'extra_settings'):
             for key, value in self.extra_settings.items():
@@ -119,8 +121,7 @@ class ConfigGlueDjangoCommandTestCase(TestCase):
         sys.stdout.seek(0)
         sys.stderr.seek(0)
 
-        self.capture = {'stdout': sys.stdout.read(),
-                        'stderr': sys.stderr.read()}
+        self.output = sys.stdout.read() + sys.stderr.read()
 
         sys.stdout = self._stdout
         sys.stderr = self._stderr
@@ -135,6 +136,7 @@ class ConfigGlueDjangoCommandTestCase(TestCase):
 
 class SchemaHelperTestCase(TestCase):
     def setUp(self):
+        super(SchemaHelperTestCase, self).setUp()
         # disable logging during tests
         self.level = logging.getLogger().level
         logging.disable(logging.ERROR)
@@ -142,10 +144,11 @@ class SchemaHelperTestCase(TestCase):
     def tearDown(self):
         # re-enable logging
         logging.getLogger().setLevel(self.level)
+        super(SchemaHelperTestCase, self).tearDown()
 
     def assert_schema_structure(self, schema_cls, version, options):
         self.assertTrue(issubclass(schema_cls, Schema))
-        self.assertEqual(schema_cls.version, 'bogus')
+        self.assertEqual(schema_cls.version, version)
 
         schema = schema_cls()
 
@@ -187,8 +190,11 @@ class SchemaHelperTestCase(TestCase):
             # django defaults to tuples for options it defines as lists
             if (isinstance(option, (ListOption, TupleOption)) or
                     isinstance(expected_option, (ListOption, TupleOption))):
-                self.assertEqual(list(option.default),
-                    list(expected_option.default))
+                if option.default is None:
+                    self.assertIsNone(expected_option.default)
+                else:
+                    self.assertEqual(list(option.default),
+                                     list(expected_option.default))
             else:
                 self.assertEqual(option.default,
                     expected_option.default)

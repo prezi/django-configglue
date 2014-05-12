@@ -1,5 +1,7 @@
 # Copyright 2010-2011 Canonical Ltd.  This software is licensed under the
 # GNU Lesser General Public License version 3 (see the file LICENSE).
+import imp
+import os
 import sys
 
 from configglue.parser import SchemaConfigParser
@@ -56,3 +58,16 @@ def configglue(schema_class, configs, target):
     scp.read(configs)
     update_settings(scp, target)
     return scp
+
+
+def get_project_settings():
+    """ Find project_template settings file, in 1.4 you can't just use import """
+    from django import conf
+
+    project_template_dir = os.path.join(
+        os.path.dirname(conf.__file__),
+        'project_template')
+    for root, dirs, files in os.walk(project_template_dir):
+        if 'settings.py' in files:
+            return imp.load_source('project_settings',
+                                   os.path.join(root, 'settings.py'))

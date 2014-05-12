@@ -4,7 +4,10 @@ from unittest import TestCase
 
 from configglue.parser import SchemaConfigParser
 
-from django_configglue.schema import BaseDjangoSchema
+from django_configglue.schema import (
+    BaseDjangoSchema,
+    Django14Schema,
+)
 
 
 class DjangoSchemaTestCase(TestCase):
@@ -19,3 +22,8 @@ class DjangoSchemaTestCase(TestCase):
         value = parser.values()['django']['time_zone']
         self.assertEqual(value, None)
 
+    def test_default_wsgi_application_is_none(self):
+        parser = SchemaConfigParser(Django14Schema())
+
+        value = parser.values()['django']['wsgi_application']
+        self.assertEqual(value, None)

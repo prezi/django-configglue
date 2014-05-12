@@ -4,3 +4,4 @@
 *.swo
 build/*
 *.iml
+.tox

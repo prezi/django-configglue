@@ -6,10 +6,11 @@ import os.path
 import django
 from django import get_version
 from django.conf import settings
-from django.core.management import ManagementUtility
+from django.core.management import CommandError
 
 from mock import patch, Mock
 
+from django_configglue.management import GlueManagementUtility
 from django_configglue.utils import SETTINGS_ENCODING
 from django_configglue.schema import schemas
 from django_configglue.tests.helpers import (
@@ -23,30 +24,31 @@ class SettingsCommandTestCase(ConfigGlueDjangoCommandTestCase):
 
     def test_no_args(self):
         self.call_command()
-        self.assertTrue(self.capture['stdout'].startswith('Usage: '))
+        self.assertTrue(self.output.startswith('Usage: '))
 
     def test_get(self):
         self.call_command('installed_apps')
         expected_output = "INSTALLED_APPS = ['django_configglue']"
-        self.assertEqual(self.capture['stdout'].strip(), expected_output)
+        self.assertEqual(self.output.strip(), expected_output)
 
     def test_get_not_found(self):
         self.call_command('bogus')
         expected_output = "setting BOGUS not found"
-        self.assertEqual(self.capture['stdout'].strip(), expected_output)
+        self.assertEqual(self.output.strip(), expected_output)
 
     def test_show(self):
         expected_values = [
-            "ROOT_URLCONF = 'urls'",
-            "SITE_ID = 1",
+            'SITE_ID = 1',
             "SETTINGS_MODULE = 'django_configglue.tests.settings'",
+            "ROOT_URLCONF = 'urls'",
             "SETTINGS_ENCODING = '%s'" % SETTINGS_ENCODING,
         ]
-        django_version = django.VERSION[:2]
-        if django_version == (1, 1):
-            expected_values.append("DATABASE_SUPPORTS_TRANSACTIONS = True")
+        # Django 1.6 needs special treatment (BASE_DIR is not a core setting,
+        # but it's a very useful convention from the example project)
+        if django.VERSION >= (1, 6, 0):
+            expected_values.append("BASE_DIR = ''")
         self.call_command(show_current=True)
-        output_lines = self.capture['stdout'].strip().split('\n')
+        output_lines = self.output.strip().split('\n')
         self.assertEqual(set(expected_values), set(output_lines))
 
     def test_show_global(self):
@@ -55,7 +57,7 @@ class SettingsCommandTestCase(ConfigGlueDjangoCommandTestCase):
             dir(settings) if self.is_setting(key)])
         # process output into dictionary
         items = map(lambda x: x.split(' = '),
-                    self.capture['stdout'].strip().split('\n'))
+                    self.output.strip().split('\n'))
         items = map(lambda x: (x[0].strip(), eval(x[1].strip())),
             (t for t in items if self.is_setting(t[0])))
         output = dict(items)
@@ -66,12 +68,12 @@ class SettingsCommandTestCase(ConfigGlueDjangoCommandTestCase):
         self.call_command('time_zone', locate=True)
         location = os.path.join(os.path.realpath(os.path.curdir), 'test.cfg')
         expected_output = "setting TIME_ZONE last defined in '%s'" % location
-        self.assertEqual(self.capture['stdout'].strip(), expected_output)
+        self.assertEqual(self.output.strip(), expected_output)
 
     def test_locate_setting_not_found(self):
         self.call_command('bogus', locate=True)
         expected_output = 'setting BOGUS not found'
-        self.assertEqual(self.capture['stdout'].strip(), expected_output)
+        self.assertEqual(self.output.strip(), expected_output)
 
     def test_locate_setting_no_configglue_parser(self):
         wrapped = getattr(settings, self.wrapped_settings)
@@ -84,7 +86,7 @@ class SettingsCommandTestCase(ConfigGlueDjangoCommandTestCase):
                              locals(), [''])
             location = os.path.realpath(mod.__file__)
             expected_output = "setting TIME_ZONE last defined in %r" % location
-            self.assertEqual(self.capture['stdout'].strip(), expected_output)
+            self.assertEqual(self.output.strip(), expected_output)
         finally:
             wrapped.__CONFIGGLUE_PARSER__ = old_CONFIGGLUE_PARSER
 
@@ -96,7 +98,7 @@ class SettingsCommandTestCase(ConfigGlueDjangoCommandTestCase):
         try:
             self.call_command('bogus', locate=True)
             expected_output = 'setting BOGUS not found'
-            self.assertEqual(self.capture['stdout'].strip(), expected_output)
+            self.assertEqual(self.output.strip(), expected_output)
         finally:
             wrapped.__CONFIGGLUE_PARSER__ = old_CONFIGGLUE_PARSER
 
@@ -115,10 +117,11 @@ class SettingsCommandTestCase(ConfigGlueDjangoCommandTestCase):
 class GeneratedSettingsTestCase(ConfigGlueDjangoCommandTestCase,
         SchemaHelperTestCase):
     def setUp(self):
+        super(GeneratedSettingsTestCase, self).setUp()
         self.expected_schema = schemas.get(
             django.get_version(), strict=True)()
-
-        mock_get_version = Mock(return_value='foo')
+        self.version = '.'.join(django.get_version().split('.')[:2]) + '.foo'
+        mock_get_version = Mock(return_value=self.version)
         self.patch_get_version = patch(
             'django_configglue.tests.settings.django.get_version',
             mock_get_version)
@@ -127,7 +130,6 @@ class GeneratedSettingsTestCase(ConfigGlueDjangoCommandTestCase,
         self.patch_warn = patch(
             'django_configglue.schema.logging.warn', self.mock_warn)
         self.patch_warn.start()
-        super(GeneratedSettingsTestCase, self).setUp()
 
     def tearDown(self):
         self.patch_get_version.stop()
@@ -137,22 +139,29 @@ class GeneratedSettingsTestCase(ConfigGlueDjangoCommandTestCase,
     def test_generated_schema(self):
         # import here so that the necessary modules can be mocked before
         # being required
+        self.load_settings()
+
         from django.conf import settings
         schema = settings.__CONFIGGLUE_PARSER__.schema
 
         self.assert_schemas_equal(schema, self.expected_schema)
         self.assertEqual(self.mock_warn.call_args_list,
-            [(("No schema registered for version 'foo'",), {}),
-             (("Dynamically creating schema for version 'foo'",), {})])
+            [(("No schema registered for version '%s'" % self.version,),
+              {}),
+             (("Dynamically creating schema for version '%s'" % self.version,),
+              {})])
 
 
 class ValidateCommandTestCase(ConfigGlueDjangoCommandTestCase):
     COMMAND = 'settings'
 
     def test_valid_config(self):
-        self.call_command(validate=True)
+        try:
+            self.call_command(validate=True)
+        except SystemExit:
+            pass
         expected_output = 'Settings appear to be fine.'
-        self.assertEqual(self.capture['stdout'].strip(), expected_output)
+        self.assertEqual(self.output.strip(), expected_output)
 
     def test_invalid_config(self):
         config = """
@@ -161,15 +170,13 @@ invalid_setting = foo
 """
         self.set_config(config)
         self.load_settings()
-        self.assertRaises(SystemExit, self.call_command, validate=True)
 
         try:
             self.call_command(validate=True)
-        except SystemExit, e:
-            self.assertEqual(e.code, 1)
-            error_msg = 'Error: Settings did not validate against schema.'
-            self.assertTrue(self.capture['stderr'].strip().startswith(
-                error_msg))
+        except (SystemExit, CommandError), e:
+            error_msg = 'Settings did not validate against schema.'
+            self.assertTrue((error_msg in self.output.strip()) or
+                            error_msg in str(e))
 
     def test_no_configglue_parser(self):
         wrapped = getattr(settings, self.wrapped_settings)
@@ -180,7 +187,7 @@ invalid_setting = foo
             self.call_command(validate=True)
             expected_output = ('The settings module was not generated by '
                 'configglue. Can only validate configglue generated settings.')
-            self.assertEqual(self.capture['stdout'].strip(), expected_output)
+            self.assertEqual(self.output.strip(), expected_output)
         finally:
             wrapped.__CONFIGGLUE_PARSER__ = old_CONFIGGLUE_PARSER
 
@@ -190,36 +197,40 @@ class CommandLineIntegrationTestCase(ConfigGlueDjangoCommandTestCase):
 
     def test_help(self):
         self.call_command()
-        self.assertTrue('--django_debug' in self.capture['stdout'])
+        self.assertTrue('--django_debug' in self.output)
 
     def test_update_settings(self):
         self.assertTrue(settings.DEBUG)
         args = ['manage.py', 'settings', '--django_debug=False', 'DEBUG']
-        utility = ManagementUtility(argv=args)
+        utility = GlueManagementUtility(argv=args)
         self.begin_capture()
         try:
             utility.execute()
         finally:
             self.end_capture()
-        self.assertTrue('False' in self.capture['stdout'])
+        self.assertTrue('False' in self.output)
 
     def test_version_is_printed_once(self):
         args = ['manage.py', '--version']
-        utility = ManagementUtility(argv=args)
+        utility = GlueManagementUtility(argv=args)
         self.begin_capture()
         try:
             utility.execute()
         finally:
             self.end_capture()
         expected = get_version()
-        self.assertTrue(self.capture['stdout'].count(expected) == 1)
+        self.assertEqual(1, self.output.count(expected))
 
     def test_noargs_doesnt_error(self):
         args = ['manage.py']
-        utility = ManagementUtility(argv=args)
+        utility = GlueManagementUtility(argv=args)
         self.begin_capture()
         try:
-            self.assertRaises(SystemExit, utility.execute)
+            utility.execute()
+        except SystemExit:
+            # Django <= 1.3 uses SystemExit to terminate management
+            # command
+            pass
         finally:
             self.end_capture()
-        self.assertFalse('Unknown command' in self.capture['stdout'])
+        self.assertFalse('Unknown command' in self.output)
