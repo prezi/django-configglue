@@ -11,6 +11,11 @@ def runtests():
 
     os.environ['DJANGO_SETTINGS_MODULE'] = 'testproject.settings'
 
+    # Explicit initialization required by Django 1.7
+    import django
+    if hasattr(django, 'setup'):
+        django.setup()
+
     from django.core.management import call_command
 
     call_command('test', 'django_configglue')
