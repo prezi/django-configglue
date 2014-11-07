@@ -8,7 +8,7 @@ from prezi.setuputils.git import fetch_version
 
 setup(
     # metadata
-    name='django-configglue',
+    name='prezi-django-configglue',
     version=fetch_version(__file__),
     author='Ricardo Kirkner',
     author_email='ricardo.kirkner@canonical.com',
