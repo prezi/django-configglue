@@ -3,15 +3,17 @@
 
 from setuptools import setup, find_packages
 
-from setup_helpers import get_version
+from prezi.setuputils.git import fetch_version
 
 
 setup(
     # metadata
     name='django-configglue',
-    version=get_version('django_configglue/__init__.py'),
+    version=fetch_version(__file__),
     author='Ricardo Kirkner',
     author_email='ricardo.kirkner@canonical.com',
+    maintainer='Szilveszter Farkas',
+    maintainer_email='szilveszter.farkas@prezi.com',
     description='Django commands for managing configglue generated settings',
     long_description='Django commands for managing configglue generated '
         'settings from the command line.\n'
