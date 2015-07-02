@@ -6,7 +6,7 @@ import inspect
 import textwrap
 from cStringIO import StringIO
 from optparse import BadOptionError
-from unittest import TestCase
+from unittest import TestCase, skipIf
 
 import django
 from configglue.schema import (
@@ -45,6 +45,8 @@ from django_configglue.schema import (
 from django_configglue.tests.helpers import (
     ConfigGlueDjangoCommandTestCase,
     SchemaHelperTestCase,
+    BELOW_DJANGO_1_8_CONDITION,
+    BELOW_DJANGO_1_8_ERROR
 )
 
 
@@ -351,6 +353,7 @@ class GlueManagementUtilityTestCase(ConfigGlueDjangoCommandTestCase):
         finally:
             self.end_capture()
 
+    @skipIf(BELOW_DJANGO_1_8_CONDITION, BELOW_DJANGO_1_8_ERROR)
     def test_execute_no_args(self):
         self.util.argv = ['']
         try:
@@ -361,6 +364,7 @@ class GlueManagementUtilityTestCase(ConfigGlueDjangoCommandTestCase):
             "Type '%s help <subcommand>' for help" % (self.util.prog_name,) in
             self.output)
 
+    @skipIf(BELOW_DJANGO_1_8_CONDITION, BELOW_DJANGO_1_8_ERROR)
     @patch('sys.stdout')
     def test_execute_help(self, mock_stdout):
         mock_stdout.isatty.return_value = False
@@ -372,6 +376,7 @@ class GlueManagementUtilityTestCase(ConfigGlueDjangoCommandTestCase):
             pass
         self.assertTrue(self.util.main_help_text() in self.output)
 
+    @skipIf(BELOW_DJANGO_1_8_CONDITION, BELOW_DJANGO_1_8_ERROR)
     @patch('sys.stdout')
     def test_execute_help_option(self, mock_stdout):
         mock_stdout.isatty.return_value = False
@@ -379,22 +384,26 @@ class GlueManagementUtilityTestCase(ConfigGlueDjangoCommandTestCase):
         self.execute()
         self.assertTrue(self.util.main_help_text() in self.output)
 
+    @skipIf(BELOW_DJANGO_1_8_CONDITION, BELOW_DJANGO_1_8_ERROR)
     def test_execute_help_for_command(self):
         self.util.argv = ['', 'help', 'settings']
         self.execute()
         self.assertTrue('Show settings attributes' in self.output)
 
+    @skipIf(BELOW_DJANGO_1_8_CONDITION, BELOW_DJANGO_1_8_ERROR)
     def test_execute_version(self):
         from django import get_version
         self.util.argv = ['', '--version']
         self.execute()
         self.assertTrue(get_version() in self.output)
 
+    @skipIf(BELOW_DJANGO_1_8_CONDITION, BELOW_DJANGO_1_8_ERROR)
     def test_execute(self):
         self.util.argv = ['', 'settings']
         self.execute()
         self.assertTrue('Show settings attributes' in self.output)
 
+    @skipIf(BELOW_DJANGO_1_8_CONDITION, BELOW_DJANGO_1_8_ERROR)
     @patch('sys.stdout')
     def test_execute_settings_exception(self, mock_stdout):
         mock_stdout.isatty.return_value = False
@@ -415,11 +424,13 @@ class GlueManagementUtilityTestCase(ConfigGlueDjangoCommandTestCase):
         finally:
             wrapped.__CONFIGGLUE_PARSER__ = old_CONFIGGLUE_PARSER
 
+    @skipIf(BELOW_DJANGO_1_8_CONDITION, BELOW_DJANGO_1_8_ERROR)
     def test_execute_with_schema_options(self):
         self.util.argv = ['', '--django_debug=False', 'help', 'settings']
         self.execute()
         self.assertTrue('Show settings attributes' in self.output)
 
+    @skipIf(BELOW_DJANGO_1_8_CONDITION, BELOW_DJANGO_1_8_ERROR)
     def test_verbosity_is_preserved(self):
         self.util.argv = ['', 'settings', '--verbosity=2']
         handle_path = ('django_configglue.management.commands.settings.'

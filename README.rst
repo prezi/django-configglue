@@ -38,4 +38,10 @@ the ``doc`` folder.
 Support
 =======
 
-Feel free to submit bug reports, suggestions, etc as tickets in github: https://github.com/IDCubed/django-configglue/issues
+Feel free to submit bug reports, suggestions, etc as tickets in github: https://github.com/prezi/django-configglue/issues
+
+
+Known issues
+============
+
+Due to Django switching from `optparse` to `argparse` in 1.8, there is no management command support for 1.8 (needs significant adjustments in configglue itself).
