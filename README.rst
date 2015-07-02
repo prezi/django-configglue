@@ -23,6 +23,10 @@ As a shortcut, you can also run ::
 .. note:: django-configglue has only been tested with Python 2.6 but should
 	work on Python 2.4+.
 
+You can also run the tests for different combinations of Python and Django
+versions using tox ::
+
+    tox -e py27-django17
 
 Getting started
 ===============
@@ -34,4 +38,10 @@ the ``doc`` folder.
 Support
 =======
 
-Feel free to submit bug reports, suggestions, etc as tickets in github: https://github.com/IDCubed/django-configglue/issues
+Feel free to submit bug reports, suggestions, etc as tickets in github: https://github.com/prezi/django-configglue/issues
+
+
+Known issues
+============
+
+Due to Django switching from `optparse` to `argparse` in 1.8, there is no management command support for 1.8 (needs significant adjustments in configglue itself).

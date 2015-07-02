@@ -22,6 +22,9 @@ from configglue.schema import (
     Schema,
 )
 
+BELOW_DJANGO_1_8_CONDITION = django.VERSION[:2] >= (1, 8)
+BELOW_DJANGO_1_8_ERROR = 'Does not apply to Django 1.8 and up.'
+
 
 class ConfigGlueDjangoCommandTestCase(TestCase):
     COMMAND = ''
