@@ -1919,6 +1919,91 @@ class Django17Schema(Django17Base):
                  "serialization process.")
 
 
+Django18Base = derivate_django_schema(
+    Django17Schema,
+    exclude=[
+        "admin_for",
+        "comments_allow_profanities",
+        "profanities_list",
+        "send_broken_link_emails",
+        "transactions_managed",
+    ])
+
+
+class Django18Schema(Django18Base):
+    version = '1.8'
+
+    class django(Django18Base.django):
+
+        email_ssl_certfile = StringOption(
+            default=None,
+            help="If EMAIL_USE_SSL or EMAIL_USE_TLS is True, you can "
+                 "optionally specify the path to a PEM-formatted "
+                 "certificate chain file to use for the SSL connection.")
+
+        email_ssl_keyfile = StringOption(
+            default=None,
+            help="If EMAIL_USE_SSL or EMAIL_USE_TLS is True, you can "
+                 "optionally specify the path to a PEM-formatted private "
+                 "key file to use for the SSL connection. Note that setting "
+                 "EMAIL_SSL_CERTFILE and EMAIL_SSL_KEYFILE doesn't result "
+                 "in any certificate checking. They're passed to the "
+                 "underlying SSL connection. Please refer to the "
+                 "documentation of Python's ssl.wrap_socket() function for "
+                 "details on how the certificate chain file and private key "
+                 "file are handled.")
+
+        email_timeout = IntOption(
+            default=None,
+            help="Specifies a timeout in seconds for blocking operations "
+                 "like the connection attempt.")
+
+        secure_browser_xss_filter = BoolOption(
+            default=False,
+            help="If True, the SecurityMiddleware sets the "
+                 "X-XSS-Protection: 1; mode=block header on all responses "
+                 "that do not already have it.")
+
+        secure_content_type_nosniff = BoolOption(
+            default=False,
+            help="If True, the SecurityMiddleware sets the X-Content-Type-Options: nosniff header on all responses that do not already have it.")
+
+        secure_hsts_include_subdomains = BoolOption(
+            default=False,
+            help="If True, the SecurityMiddleware adds the includeSubDomains tag to the HTTP Strict Transport Security header. It has no effect unless SECURE_HSTS_SECONDS is set to a non-zero value.")
+
+        secure_hsts_seconds = IntOption(
+            default=0,
+            help="If set to a non-zero integer value, the SecurityMiddleware sets the HTTP Strict Transport Security header on all responses that do not already have it.")
+
+        secure_redirect_exempt = ListOption(
+            item=StringOption(),
+            default=[],
+            help="If a URL path matches a regular expression in this list, the request will not be redirected to HTTPS. If SECURE_SSL_REDIRECT is False, this setting has no effect.")
+
+        secure_ssl_host = StringOption(
+            default=None,
+            help="If a string (e.g. secure.example.com), all SSL redirects will be directed to this host rather than the originally-requested host (e.g. www.example.com). If SECURE_SSL_REDIRECT is False, this setting has no effect.")
+
+        secure_ssl_redirect = BoolOption(
+            default=False,
+            help="If True, the SecurityMiddleware redirects all non-HTTPS requests to HTTPS (except for those URLs matching a regular expression listed in SECURE_REDIRECT_EXEMPT).")
+
+        templates = ListOption(
+            item=UpperCaseDictOption(spec={
+                'backend': StringOption(),
+                'name': StringOption(),
+                'dirs': ListOption(item=StringOption(), default=[]),
+                'app_dirs': BoolOption(default=False),
+                'options': DictOption(),
+            }),
+            default=[])
+
+        test_runner = StringOption(
+            default='django.test.runner.DiscoverRunner',
+            help="The name of the class to use for starting the test suite.")
+
+
 class DjangoSchemaFactory(object):
     def __init__(self):
         self._schemas = {}
@@ -2115,3 +2200,6 @@ schemas.register(Django17Schema, '1.7.5')
 schemas.register(Django17Schema, '1.7.6')
 schemas.register(Django17Schema, '1.7.7')
 schemas.register(Django17Schema, '1.7.8')
+schemas.register(Django18Schema)
+schemas.register(Django18Schema, '1.8.1')
+schemas.register(Django18Schema, '1.8.2')

@@ -2,6 +2,7 @@
 # GNU Lesser General Public License version 3 (see the file LICENSE).
 
 import os.path
+from unittest import skipIf
 
 import django
 from django import get_version
@@ -16,6 +17,8 @@ from django_configglue.schema import schemas
 from django_configglue.tests.helpers import (
     ConfigGlueDjangoCommandTestCase,
     SchemaHelperTestCase,
+    BELOW_DJANGO_1_8_CONDITION,
+    BELOW_DJANGO_1_8_ERROR
 )
 
 
@@ -64,17 +67,20 @@ class SettingsCommandTestCase(ConfigGlueDjangoCommandTestCase):
         # test equality
         self.assertEqual(output, expected_output)
 
+    @skipIf(BELOW_DJANGO_1_8_CONDITION, BELOW_DJANGO_1_8_ERROR)
     def test_locate_setting(self):
         self.call_command('time_zone', locate=True)
         location = os.path.join(os.path.realpath(os.path.curdir), 'test.cfg')
         expected_output = "setting TIME_ZONE last defined in '%s'" % location
         self.assertEqual(self.output.strip(), expected_output)
 
+    @skipIf(BELOW_DJANGO_1_8_CONDITION, BELOW_DJANGO_1_8_ERROR)
     def test_locate_setting_not_found(self):
         self.call_command('bogus', locate=True)
         expected_output = 'setting BOGUS not found'
         self.assertEqual(self.output.strip(), expected_output)
 
+    @skipIf(BELOW_DJANGO_1_8_CONDITION, BELOW_DJANGO_1_8_ERROR)
     def test_locate_setting_no_configglue_parser(self):
         wrapped = getattr(settings, self.wrapped_settings)
         old_CONFIGGLUE_PARSER = wrapped.__CONFIGGLUE_PARSER__
@@ -90,6 +96,7 @@ class SettingsCommandTestCase(ConfigGlueDjangoCommandTestCase):
         finally:
             wrapped.__CONFIGGLUE_PARSER__ = old_CONFIGGLUE_PARSER
 
+    @skipIf(BELOW_DJANGO_1_8_CONDITION, BELOW_DJANGO_1_8_ERROR)
     def test_locate_setting_not_found_no_configglue_parser(self):
         wrapped = getattr(settings, self.wrapped_settings)
         old_CONFIGGLUE_PARSER = wrapped.__CONFIGGLUE_PARSER__
@@ -178,6 +185,7 @@ invalid_setting = foo
             self.assertTrue((error_msg in self.output.strip()) or
                             error_msg in str(e))
 
+    @skipIf(BELOW_DJANGO_1_8_CONDITION, BELOW_DJANGO_1_8_ERROR)
     def test_no_configglue_parser(self):
         wrapped = getattr(settings, self.wrapped_settings)
         old_CONFIGGLUE_PARSER = wrapped.__CONFIGGLUE_PARSER__
@@ -199,6 +207,7 @@ class CommandLineIntegrationTestCase(ConfigGlueDjangoCommandTestCase):
         self.call_command()
         self.assertTrue('--django_debug' in self.output)
 
+    @skipIf(BELOW_DJANGO_1_8_CONDITION, BELOW_DJANGO_1_8_ERROR)
     def test_update_settings(self):
         self.assertTrue(settings.DEBUG)
         args = ['manage.py', 'settings', '--django_debug=False', 'DEBUG']
@@ -210,6 +219,7 @@ class CommandLineIntegrationTestCase(ConfigGlueDjangoCommandTestCase):
             self.end_capture()
         self.assertTrue('False' in self.output)
 
+    @skipIf(BELOW_DJANGO_1_8_CONDITION, BELOW_DJANGO_1_8_ERROR)
     def test_version_is_printed_once(self):
         args = ['manage.py', '--version']
         utility = GlueManagementUtility(argv=args)
@@ -221,6 +231,7 @@ class CommandLineIntegrationTestCase(ConfigGlueDjangoCommandTestCase):
         expected = get_version()
         self.assertEqual(1, self.output.count(expected))
 
+    @skipIf(BELOW_DJANGO_1_8_CONDITION, BELOW_DJANGO_1_8_ERROR)
     def test_noargs_doesnt_error(self):
         args = ['manage.py']
         utility = GlueManagementUtility(argv=args)

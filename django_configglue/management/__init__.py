@@ -4,7 +4,7 @@
 # GNU Lesser General Public License version 3 (see the file LICENSE)
 # except where third-party/django/LICENSE applies.
 
-from optparse import BadOptionError
+from optparse import BadOptionError, OptionParser
 
 import django
 from django.core import management
@@ -14,9 +14,11 @@ from configglue.glue import schemaconfigglue
 from django_configglue import utils
 
 _ = lambda s: s
+# This hack is needed, because 1.8 got rid of LaxOptionParser
+BaseOptionParser = getattr(management, 'LaxOptionParser', OptionParser)
 
 
-class LaxOptionParser(management.LaxOptionParser):
+class LaxOptionParser(BaseOptionParser):
     # Subclasses django's to avoid a bug
 
     def _process_long_opt(self, rargs, values):
