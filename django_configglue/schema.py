@@ -1904,6 +1904,20 @@ class Django17Schema(Django17Base):
                  "still be printed, but will not prevent management commands "
                  "from running.")
 
+        test_non_serialized_apps = ListOption(
+            item=StringOption(),
+            default=[],
+            help="In order to restore the database state between tests for "
+                 "TransactionTestCases and database backends without "
+                 "transactions, Django will serialize the contents of all "
+                 "apps with migrations when it starts the test run so it "
+                 "can then reload from that copy before tests that need it. "
+                 "This slows down the startup time of the test runner; if "
+                 "you have apps that you know don't need this feature, "
+                 "you can add their full names in here (e.g. "
+                 "'django.contrib.contenttypes') to exclude them from this "
+                 "serialization process.")
+
 
 class DjangoSchemaFactory(object):
     def __init__(self):

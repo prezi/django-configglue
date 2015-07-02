@@ -23,6 +23,10 @@ As a shortcut, you can also run ::
 .. note:: django-configglue has only been tested with Python 2.6 but should
 	work on Python 2.4+.
 
+You can also run the tests for different combinations of Python and Django
+versions using tox ::
+
+    tox -e py27-django17
 
 Getting started
 ===============
