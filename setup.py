@@ -44,5 +44,5 @@ setup(
 
     # tests
     test_suite='testproject.testrunner.runtests',
-    tests_require=['mock'],
+    tests_require=['mock==1.0.1'],
 )
