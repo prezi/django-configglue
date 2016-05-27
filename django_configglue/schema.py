@@ -2004,6 +2004,33 @@ class Django18Schema(Django18Base):
             help="The name of the class to use for starting the test suite.")
 
 
+Django19Base = derivate_django_schema(
+    Django18Schema,
+    exclude=[]
+)
+
+
+class Django19Schema(Django19Base):
+    version = '1.9'
+
+    class django(Django19Base.django):
+
+        use_x_forwarded_port = BoolOption(
+            default=False,
+            help="A boolean that specifies whether to use the X-Forwarded-Port header in preference to the SERVER_PORT META variable. This should only be enabled if a proxy which sets this header is in use. USE_X_FORWARDED_HOST takes priority over this setting."
+        )
+
+        csrf_header_name = StringOption(
+            default='HTTP_X_CSRFTOKEN'
+            help="The name of the request header used for CSRF authentication. As with other HTTP headers in request.META, the header name received from the server is normalized by converting all characters to uppercase, replacing any hyphens with underscores, and adding an 'HTTP_' prefix to the name. For example, if your client sends a 'X-XSRF-TOKEN' header, the setting should be 'HTTP_X_XSRF_TOKEN'."
+        )
+
+        csrf_trusted_origins = ListOption(
+            item=StringOption(),
+            help="A list of hosts which are trusted origins for unsafe requests (e.g. POST). For a secure unsafe request, Django’s CSRF protection requires that the request have a Referer header that matches the origin present in the Host header. This prevents, for example, a POST request from subdomain.example.com from succeeding against api.example.com. If you need cross-origin unsafe requests over HTTPS, continuing the example, add 'subdomain.example.com' to this list. The setting also supports subdomains, so you could add '.example.com', for example, to allow access from all subdomains of example.com."
+        )
+
+
 class DjangoSchemaFactory(object):
     def __init__(self):
         self._schemas = {}
@@ -2205,3 +2232,5 @@ schemas.register(Django18Schema)
 schemas.register(Django18Schema, '1.8.1')
 schemas.register(Django18Schema, '1.8.2')
 schemas.register(Django18Schema, '1.8.3')
+schemas.register(Django19Schema)
+schemas.register(Django19Schema, '1.9.6')
