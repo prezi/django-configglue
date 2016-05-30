@@ -2021,13 +2021,13 @@ class Django19Schema(Django19Base):
         )
 
         csrf_header_name = StringOption(
-            default='HTTP_X_CSRFTOKEN'
+            default='HTTP_X_CSRFTOKEN',
             help="The name of the request header used for CSRF authentication. As with other HTTP headers in request.META, the header name received from the server is normalized by converting all characters to uppercase, replacing any hyphens with underscores, and adding an 'HTTP_' prefix to the name. For example, if your client sends a 'X-XSRF-TOKEN' header, the setting should be 'HTTP_X_XSRF_TOKEN'."
         )
 
         csrf_trusted_origins = ListOption(
             item=StringOption(),
-            help="A list of hosts which are trusted origins for unsafe requests (e.g. POST). For a secure unsafe request, Django’s CSRF protection requires that the request have a Referer header that matches the origin present in the Host header. This prevents, for example, a POST request from subdomain.example.com from succeeding against api.example.com. If you need cross-origin unsafe requests over HTTPS, continuing the example, add 'subdomain.example.com' to this list. The setting also supports subdomains, so you could add '.example.com', for example, to allow access from all subdomains of example.com."
+            help="A list of hosts which are trusted origins for unsafe requests (e.g. POST). For a secure unsafe request, Django's CSRF protection requires that the request have a Referer header that matches the origin present in the Host header. This prevents, for example, a POST request from subdomain.example.com from succeeding against api.example.com. If you need cross-origin unsafe requests over HTTPS, continuing the example, add 'subdomain.example.com' to this list. The setting also supports subdomains, so you could add '.example.com', for example, to allow access from all subdomains of example.com."
         )
 
 
