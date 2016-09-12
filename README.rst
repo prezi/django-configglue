@@ -6,6 +6,12 @@ Overview
 
 django-configglue brings all the joy of ConfigGlue - http://configglue.readthedocs.org/en/latest/index.html - to your django project.
 
+Releasing
+=========
+
+The https://jenkins-bpsfjm.prezi.com/job/package-django-configglue/ job runs on the **prezi-package** branch so you have to merge your changes from master before you run the package creation job.
+
+You can easily open new PR here: https://github.com/prezi/django-configglue/compare/prezi:prezi-package...prezi:master
 
 Running tests
 =============
@@ -33,7 +39,6 @@ Getting started
 
 For documentation on django-configglue, please refer to the files found under
 the ``doc`` folder.
-
 
 Support
 =======
