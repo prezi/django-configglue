@@ -11,6 +11,8 @@ Releasing
 
 The https://jenkins-bpsfjm.prezi.com/job/package-django-configglue/ job runs on the **prezi-package** branch so you have to merge your changes from master before you run the package creation job.
 
+You can easily open new PR with [this](https://github.com/prezi/django-configglue/compare/prezi:prezi-package...prezi:master) link.
+
 Running tests
 =============
 
