@@ -140,7 +140,8 @@ class BaseDjangoSchema(Schema):
         # CORE         #
         ################
 
-        debug = BoolOption(default=True)
+        # as it caused a security issue that the default was True, we should have it False, set it explicitly to True, if you need it 
+        debug = BoolOption(default=False)
         template_debug = BoolOption(default=True)
         debug_propagate_exceptions = BoolOption(default=False,
             help="Whether the framework should propagate raw exceptions "
