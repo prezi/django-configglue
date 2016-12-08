@@ -140,7 +140,7 @@ class BaseDjangoSchema(Schema):
         # CORE         #
         ################
 
-        # as it caused a security issue that the default was True, we should have it False, set it explicitly to True, if you need it 
+        # as it caused a security issue that the default was True, we should have it False, set it explicitly to True, if you need it
         debug = BoolOption(default=False)
         template_debug = BoolOption(default=True)
         debug_propagate_exceptions = BoolOption(default=False,
@@ -2222,3 +2222,4 @@ schemas.register(Django18Schema, '1.8.13')
 schemas.register(Django18Schema, '1.8.14')
 schemas.register(Django18Schema, '1.8.15')
 schemas.register(Django18Schema, '1.8.16')
+schemas.register(Django18Schema, '1.8.17')
