@@ -1979,7 +1979,7 @@ class Django18Schema(Django18Base):
 
         secure_redirect_exempt = ListOption(
             item=StringOption(),
-            default=[],
+            default=['^healthcheck/'],
             help="If a URL path matches a regular expression in this list, the request will not be redirected to HTTPS. If SECURE_SSL_REDIRECT is False, this setting has no effect.")
 
         secure_ssl_host = StringOption(
@@ -1987,7 +1987,7 @@ class Django18Schema(Django18Base):
             help="If a string (e.g. secure.example.com), all SSL redirects will be directed to this host rather than the originally-requested host (e.g. www.example.com). If SECURE_SSL_REDIRECT is False, this setting has no effect.")
 
         secure_ssl_redirect = BoolOption(
-            default=False,
+            default=True,
             help="If True, the SecurityMiddleware redirects all non-HTTPS requests to HTTPS (except for those URLs matching a regular expression listed in SECURE_REDIRECT_EXEMPT).")
 
         templates = ListOption(
