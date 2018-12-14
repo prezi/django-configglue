@@ -1788,6 +1788,17 @@ class Django16Schema(Django16Base):
                 'atomic_requests': BoolOption(default=False),
                 'autocommit': BoolOption(default=True),
                 'conn_max_age': IntOption(default=0),
+                'options': DictOption(spec={
+                    'init_command': StringOption(default=''),
+                    'ssl_verify_cert': BoolOption(default=False),  # This enables SSL anyway
+                    'ssl_ca': StringOption(default=''),  # CA for the cert, not a problem to leave empty!
+                    'isolation_level': StringOption(default=None),  # This will default Django's default setup
+                    'pool': DictOption(spec={  # Used for DB connection pooling provided by `python-mysql-pool`
+                        'use': IntOption(default=0),
+                        'size': IntOption(default=0),
+                        'name': StringOption(default='local'),
+                    }, default={}),
+                }, default={})
             }),
             default={
                 'default': {
@@ -1797,6 +1808,7 @@ class Django16Schema(Django16Base):
                     'PASSWORD': '',
                     'HOST': '',
                     'PORT': '',
+                    'OPTIONS': {},
                 }
             })
 
