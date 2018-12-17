@@ -1805,7 +1805,7 @@ class Django16Schema(Django16Base):
                 'atomic_requests': BoolOption(default=False),
                 'autocommit': BoolOption(default=True),
                 'conn_max_age': IntOption(default=0),
-                'options': DictOption(spec={
+                'options': RemoveNoneDictOptions(spec={
                     'init_command': StringOption(default=None),
                     'ssl_verify_cert': BoolOption(default=False),  # This enables SSL anyway
                     'ssl_ca': StringOption(default=''),  # CA for the cert, not a problem to leave empty!
@@ -1814,7 +1814,7 @@ class Django16Schema(Django16Base):
                         'use': IntOption(default=0),
                         'size': IntOption(default=0),
                         'name': StringOption(default='local'),
-                    }, default={}),
+                    }, default=None),
                 }, default={})
             }),
             default={
