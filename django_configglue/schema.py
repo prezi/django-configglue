@@ -104,6 +104,23 @@ class UpperCaseDictOption(DictOption):
         return result
 
 
+class RemoveNoneDictOptions(DictOption):
+    """ A DictOption with all the values removed that has a None value.
+
+    This can be used in cases when you only want to have a value in the
+    settings dict if you specify a non-default value. (e.g. init_command
+    for db connections, which is not supported by the pooling library) """
+    def parse(self, section, parser=None, raw=False):
+        parsed = super(RemoveNoneDictOptions, self).parse(
+            section, parser, raw)
+        result = {}
+        for k, v in parsed.items():
+            if v is None:
+                continue
+            result[k] = v
+        return result
+
+
 def derivate_django_schema(schema, exclude=None):
     """Return a modified version of a schema.
 
@@ -1789,11 +1806,11 @@ class Django16Schema(Django16Base):
                 'autocommit': BoolOption(default=True),
                 'conn_max_age': IntOption(default=0),
                 'options': DictOption(spec={
-                    'init_command': StringOption(default=''),
+                    'init_command': StringOption(default=None),
                     'ssl_verify_cert': BoolOption(default=False),  # This enables SSL anyway
                     'ssl_ca': StringOption(default=''),  # CA for the cert, not a problem to leave empty!
                     'isolation_level': StringOption(default=None),  # This will default Django's default setup
-                    'pool': DictOption(spec={  # Used for DB connection pooling provided by `python-mysql-pool`
+                    'pool': RemoveNoneDictOptions(spec={  # Used for DB connection pooling provided by `python-mysql-pool`
                         'use': IntOption(default=0),
                         'size': IntOption(default=0),
                         'name': StringOption(default='local'),
