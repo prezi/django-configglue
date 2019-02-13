@@ -209,15 +209,15 @@ class CommandLineIntegrationTestCase(ConfigGlueDjangoCommandTestCase):
 
     @skipIf(BELOW_DJANGO_1_8_CONDITION, BELOW_DJANGO_1_8_ERROR)
     def test_update_settings(self):
-        self.assertTrue(settings.DEBUG)
-        args = ['manage.py', 'settings', '--django_debug=False', 'DEBUG']
+        self.assertFalse(settings.DEBUG)
+        args = ['manage.py', 'settings', '--django_debug=True', 'DEBUG']
         utility = GlueManagementUtility(argv=args)
         self.begin_capture()
         try:
             utility.execute()
         finally:
             self.end_capture()
-        self.assertTrue('False' in self.output)
+        self.assertTrue('True' in self.output)
 
     @skipIf(BELOW_DJANGO_1_8_CONDITION, BELOW_DJANGO_1_8_ERROR)
     def test_version_is_printed_once(self):
