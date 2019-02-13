@@ -40,9 +40,7 @@ setup(
 
     # content
     packages=find_packages(exclude=['testproject*']),
-    install_requires=['django >= 1.0.2-final', 'configglue >= 1.0'],
 
     # tests
     test_suite='testproject.testrunner.runtests',
-    tests_require=['mock==1.0.1'],
 )
