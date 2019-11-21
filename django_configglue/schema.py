@@ -1111,7 +1111,7 @@ class Django13Schema(Django13Base):
         ###########
 
         logging_config = StringOption(null=True,
-            default='django.utils.log.dictConfig',
+            default='logging.config.dictConfig',
             help='The callable to use to configure logging')
         logging = DictOption(
             spec={
@@ -2034,6 +2034,17 @@ class Django18Schema(Django18Base):
             help="The name of the class to use for starting the test suite.")
 
 
+class Django111Schema(Django18Base):
+    version = '1.11'
+
+    # sections
+    class django(Django18Base.django):
+
+        logging_config = StringOption(null=True,
+            default='logging.config.dictConfig',
+            help='The callable to use to configure logging')
+
+
 class DjangoSchemaFactory(object):
     def __init__(self):
         self._schemas = {}
@@ -2256,3 +2267,6 @@ schemas.register(Django18Schema, '1.8.16')
 schemas.register(Django18Schema, '1.8.17')
 schemas.register(Django18Schema, '1.8.18')
 schemas.register(Django18Schema, '1.8.19')
+
+schemas.register(Django111Schema)
+schemas.register(Django18Schema, '1..19')

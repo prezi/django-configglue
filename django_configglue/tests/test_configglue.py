@@ -292,7 +292,7 @@ class DjangoSupportTestCase(SchemaHelperTestCase):
         schema = schemas.get('1.3')
         section = Section(name='django')
         expected = StringOption(name='logging_config', null=True,
-            default='django.utils.log.dictConfig',
+            default='logging.config.dictConfig',
             help='The callable to use to configure logging')
         expected.section = section
         self.assertEqual(schema.django.logging_config, expected)
