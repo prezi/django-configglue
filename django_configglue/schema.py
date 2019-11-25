@@ -1111,7 +1111,7 @@ class Django13Schema(Django13Base):
         ###########
 
         logging_config = StringOption(null=True,
-            default='django.utils.log.dictConfig',
+            default='logging.config.dictConfig',
             help='The callable to use to configure logging')
         logging = DictOption(
             spec={
@@ -2019,19 +2019,44 @@ class Django18Schema(Django18Base):
             default=True,
             help="If True, the SecurityMiddleware redirects all non-HTTPS requests to HTTPS (except for those URLs matching a regular expression listed in SECURE_REDIRECT_EXEMPT).")
 
-        templates = ListOption(
-            item=UpperCaseDictOption(spec={
-                'backend': StringOption(),
-                'name': StringOption(),
-                'dirs': ListOption(item=StringOption(), default=[]),
-                'app_dirs': BoolOption(default=False),
-                'options': DictOption(),
+        templates = ListOption(item=UpperCaseDictOption(spec={
+            'backend': StringOption(default='django.template.backends.django.DjangoTemplates'),
+            'dirs': ListOption(item=StringOption(), default=[]),
+            'app_dirs': BoolOption(default=False),
+            'options': DictOption(spec={
+                'context_processors': ListOption(item=StringOption()),
+                'loaders': ListOption(item=StringOption(), default=[
+                    'django.template.loaders.filesystem.Loader',
+                    'django.template.loaders.app_directories.Loader'
+                ]),
             }),
-            default=[])
+
+        }, default={}), default=[])
 
         test_runner = StringOption(
             default='django.test.runner.DiscoverRunner',
             help="The name of the class to use for starting the test suite.")
+
+
+Django111Base = derivate_django_schema(
+    Django18Schema,
+    exclude=[
+        'template_loaders',
+        'template_context_processors',
+        'template_debug',
+        'template_dirs'
+    ])
+
+
+class Django111Schema(Django111Base):
+    version = '1.11'
+
+    # sections
+    class django(Django111Base.django):
+
+        logging_config = StringOption(null=True,
+            default='logging.config.dictConfig',
+            help='The callable to use to configure logging')
 
 
 class DjangoSchemaFactory(object):
@@ -2256,3 +2281,6 @@ schemas.register(Django18Schema, '1.8.16')
 schemas.register(Django18Schema, '1.8.17')
 schemas.register(Django18Schema, '1.8.18')
 schemas.register(Django18Schema, '1.8.19')
+
+schemas.register(Django111Schema)
+schemas.register(Django111Schema, '1.11.26')
