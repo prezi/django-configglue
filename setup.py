@@ -26,9 +26,9 @@ setup(
         '   is defined throughout several files)\n'
         ' - validate settings (make sure the values match the defined schema)',
     license='LGPLv3',
-    keywords = ['django', 'configglue', 'configuration', 'settings'],
-    url = 'https://launchpad.net/django-configglue/',
-    classifiers = [
+    keywords=['django', 'configglue', 'configuration', 'settings'],
+    url='https://launchpad.net/django-configglue/',
+    classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
         'Framework :: Django',
@@ -36,6 +36,16 @@ setup(
         'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
         'Programming Language :: Python',
         'Topic :: Utilities',
+    ],
+    install_requires=[
+        'django<2',
+        'six',
+        'configglue'
+    ],
+    tests_require=[
+        'mock',
+        'nose',
+        'coverage'
     ],
 
     # content
