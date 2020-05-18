@@ -5,14 +5,14 @@ import os
 import sys
 
 from configglue.parser import SchemaConfigParser
-
+from six import PY2, string_types
 
 SETTINGS_ENCODING = 'utf-8'
 
 
 def get_django_settings(parser):
     def encode(item):
-        if isinstance(item, basestring):
+        if PY2 and isinstance(item, basestring):
             value = item.encode(SETTINGS_ENCODING)
         elif isinstance(item, dict):
             items = encode(item.items())
@@ -44,7 +44,7 @@ def update_settings(parser, target):
         target.update(settings)
     else:
         # import config into target module
-        if isinstance(target, basestring):
+        if isinstance(target, string_types):
             # target is the module's name, so import the module first
             __import__(target)
             target = sys.modules[target]
